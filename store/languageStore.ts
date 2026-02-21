@@ -275,16 +275,24 @@ const translations: Record<Language, Record<string, string>> = {
 
 export const useLanguageStore = create<LanguageState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       language: 'en',
       setLanguage: (language) => {
-        set({ language });
-        // Update document direction
-        if (language === 'ar' || language === 'ur') {
-          document.documentElement.dir = 'rtl';
-        } else {
-          document.documentElement.dir = 'ltr';
+        // Update document direction for RTL support
+        if (typeof window !== 'undefined') {
+          if (language === 'ar' || language === 'ur') {
+            document.documentElement.dir = 'rtl';
+            document.documentElement.lang = language;
+          } else {
+            document.documentElement.dir = 'ltr';
+            document.documentElement.lang = language;
+          }
         }
+        
+        set({ 
+          language,
+          translations: translations[language] || translations.en
+        });
       },
       translations: translations.en,
     }),

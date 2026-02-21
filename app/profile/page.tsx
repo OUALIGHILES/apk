@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -9,7 +9,8 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useAuthStore } from '@/store/authStore';
 import { useLanguageStore } from '@/store/languageStore';
-import { User, MapPin, Bell, CreditCard, HelpCircle, LogOut, Settings, Globe, Shield } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { User, MapPin, Bell, CreditCard, HelpCircle, LogOut, Settings, Globe, Shield, FileText, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import { API_CONFIG } from '@/config';
 
@@ -17,7 +18,9 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, setUser, logout } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const [formData, setFormData] = useState({
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
@@ -26,14 +29,15 @@ export default function ProfilePage() {
   });
 
   const menuItems = [
-    { icon: User, label: 'Edit Profile', href: '/profile/edit', show: !!user },
-    { icon: MapPin, label: 'My Addresses', href: '/addresses', show: !!user },
-    { icon: CreditCard, label: 'Wallet', href: '/wallet', show: !!user, badge: user?.wallet || '0' },
-    { icon: Bell, label: 'Notifications', href: '/notifications', show: !!user },
-    { icon: Shield, label: 'Privacy Policy', href: '/privacy' },
-    { icon: HelpCircle, label: 'Help & Support', href: '/support' },
-    { icon: Globe, label: 'Language', href: '/settings/language' },
-    { icon: Settings, label: 'Settings', href: '/settings' },
+    { icon: User, label: language === 'ar' ? 'تعديل الملف الشخصي' : language === 'ur' ? 'پروفائل میں ترمیم' : 'Edit Profile', href: '/profile/edit', show: !!user },
+    { icon: MapPin, label: language === 'ar' ? 'عناويني' : language === 'ur' ? 'میرے پتے' : 'My Addresses', href: '/addresses', show: !!user },
+    { icon: CreditCard, label: language === 'ar' ? 'المحفظة' : language === 'ur' ? 'والیٹ' : 'Wallet', href: '/wallet', show: !!user, badge: user?.wallet || '0' },
+    { icon: Bell, label: language === 'ar' ? 'الإشعارات' : language === 'ur' ? 'اطلاعات' : 'Notifications', href: '/notifications', show: !!user },
+    { icon: Settings, label: language === 'ar' ? 'الطلبات' : language === 'ur' ? 'آرڈرز' : 'Orders', href: '/orders', show: !!user },
+    { icon: HelpCircle, label: language === 'ar' ? 'المساعدة والدعم' : language === 'ur' ? 'مدد اور سپورٹ' : 'Help & Support', href: '/support' },
+    { icon: Shield, label: language === 'ar' ? 'سياسة الخصوصية' : language === 'ur' ? 'پرائیویسی پالیسی' : 'Privacy Policy', href: '/privacy' },
+    { icon: FileText, label: language === 'ar' ? 'الشروط والأحكام' : language === 'ur' ? 'شرائط و ضوابط' : 'Terms & Conditions', href: '/terms' },
+    { icon: Globe, label: language === 'ar' ? 'اللغة' : language === 'ur' ? 'زبان' : 'Language', action: () => setShowLanguagePicker(true) },
   ];
 
   const handleLogout = () => {
@@ -77,8 +81,8 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-screenback pb-20">
-      <Header title="Profile" />
-      
+      <Header title={language === 'ar' ? 'الملف الشخصي' : language === 'ur' ? 'پروفائل' : 'Profile'} />
+
       <main className="max-w-screen-xl mx-auto">
         {/* Profile Header */}
         <div className="bg-primary text-white px-4 py-6">
@@ -125,22 +129,35 @@ export default function ProfilePage() {
         <div className="mx-4 mt-4 space-y-2">
           {menuItems.filter(item => item.show !== false).map((item, index) => {
             const Icon = item.icon;
+            const Content = (
+              <Card className="flex items-center justify-between py-3 px-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-center space-x-3">
+                  <Icon className="w-5 h-5 text-primary" />
+                  <span className="font-medium text-primary">{item.label}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {item.badge && (
+                    <span className="text-sm text-greyunselect">{item.badge} SAR</span>
+                  )}
+                  <svg className="w-5 h-5 text-greyunselect" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </Card>
+            );
+
+            // If item has an action, use button instead of Link
+            if (item.action) {
+              return (
+                <button key={index} onClick={item.action} className="w-full">
+                  {Content}
+                </button>
+              );
+            }
+
             return (
-              <Link key={index} href={item.href}>
-                <Card className="flex items-center justify-between py-3 px-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-center space-x-3">
-                    <Icon className="w-5 h-5 text-primary" />
-                    <span className="font-medium text-primary">{item.label}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {item.badge && (
-                      <span className="text-sm text-greyunselect">{item.badge} SAR</span>
-                    )}
-                    <svg className="w-5 h-5 text-greyunselect" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </Card>
+              <Link key={index} href={item.href} className="block">
+                {Content}
               </Link>
             );
           })}
@@ -150,7 +167,7 @@ export default function ProfilePage() {
         <Card className="mx-4 mt-4">
           <h3 className="font-bold text-primary mb-3 flex items-center">
             <Globe className="w-5 h-5 mr-2" />
-            Language / اللغة
+            {language === 'ar' ? 'اللغة / Language' : language === 'ur' ? 'زبان / Language' : 'Language / اللغة'}
           </h3>
           <div className="flex space-x-2">
             {languages.map((lang) => (
@@ -167,6 +184,21 @@ export default function ProfilePage() {
               </button>
             ))}
           </div>
+          {language === 'ar' && (
+            <p className="text-xs text-greyunselect mt-2 text-right" dir="rtl">
+              تم تغيير اللغة بنجاح!
+            </p>
+          )}
+          {language === 'ur' && (
+            <p className="text-xs text-greyunselect mt-2 text-right" dir="rtl">
+              زبان کامیابی سے تبدیل ہو گئی!
+            </p>
+          )}
+          {language === 'en' && (
+            <p className="text-xs text-greyunselect mt-2">
+              Language changed successfully!
+            </p>
+          )}
         </Card>
 
         {/* Logout Button */}

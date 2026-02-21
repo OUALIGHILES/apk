@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button';
 import { productsAPI, Product } from '@/lib/api/products';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
+import { useFavoritesStore } from '@/store/favoritesStore';
 import { ShoppingBag, Minus, Plus, Star, Heart, Share2 } from 'lucide-react';
 import { API_CONFIG } from '@/config';
 import Link from 'next/link';
@@ -18,13 +19,41 @@ export default function ProductDetailsPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { addItem } = useCartStore();
-  
+  const { toggleProductFavorite, isProductFavorite } = useFavoritesStore();
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
+
+  const isFavorite = isProductFavorite(params.id as string);
+
+  const handleToggleFavorite = () => {
+    if (!product) return;
+    const wasFavorite = isProductFavorite(product.id);
+    toggleProductFavorite(product.id);
+    
+    setTimeout(() => {
+      alert(wasFavorite ? 'Removed from favorites' : 'Added to favorites!');
+    }, 100);
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: product?.item_name,
+        text: `Check out ${product?.item_name} on Kafek!`,
+        url: window.location.href,
+      }).catch((error) => {
+        console.log('Share cancelled:', error);
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copied to clipboard!');
+    }
+  };
 
   useEffect(() => {
     if (params.id) {
@@ -146,10 +175,20 @@ export default function ProductDetailsPage() {
           <div className="flex items-start justify-between mb-3">
             <h1 className="text-xl font-bold text-primary flex-1">{product.item_name}</h1>
             <div className="flex space-x-2">
-              <button className="p-2 hover:bg-gray-100 rounded-full">
-                <Heart className="w-5 h-5 text-greyunselect" />
+              <button
+                onClick={handleToggleFavorite}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
+                <Heart
+                  className={`w-5 h-5 ${
+                    isFavorite ? 'fill-red-500 text-red-500' : 'text-greyunselect'
+                  }`}
+                />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full">
+              <button
+                onClick={handleShare}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
                 <Share2 className="w-5 h-5 text-greyunselect" />
               </button>
             </div>

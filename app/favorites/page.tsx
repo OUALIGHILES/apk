@@ -8,44 +8,63 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { productsAPI, Product, Provider } from '@/lib/api/products';
 import { useAuthStore } from '@/store/authStore';
-import { Heart, ShoppingBag } from 'lucide-react';
+import { useFavoritesStore } from '@/store/favoritesStore';
+import { Heart, ShoppingBag, Star } from 'lucide-react';
 import Link from 'next/link';
 import { API_CONFIG } from '@/config';
 
 export default function FavoritesPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
-  const [favoriteStores, setFavoriteStores] = useState<Provider[]>([]);
+  const { favorites } = useFavoritesStore();
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [allStores, setAllStores] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'products' | 'stores'>('products');
 
   useEffect(() => {
     if (user) {
-      loadFavorites();
+      loadAllData();
     }
-  }, [user, activeTab]);
+  }, [user, favorites]); // Re-run when favorites change
 
-  const loadFavorites = async () => {
+  const loadAllData = async () => {
     try {
       setLoading(true);
-      if (activeTab === 'products') {
-        const response = await productsAPI.getMyFavoriteProducts(user!.id);
-        if (response.status === 'success') {
-          setFavoriteProducts(response.result);
-        }
-      } else {
-        const response = await productsAPI.getMyFavoriteProviders(user!.id);
-        if (response.status === 'success') {
-          setFavoriteStores(response.result);
-        }
+      // Load all products and stores, then filter by favorites
+      const [productsResponse, storesResponse] = await Promise.all([
+        productsAPI.getProductList({}),
+        productsAPI.getAllStoreList({}),
+      ]);
+      
+      if (productsResponse.status === 'success') {
+        setAllProducts(productsResponse.result);
+      }
+      if (storesResponse.status === 'success') {
+        setAllStores(storesResponse.result);
       }
     } catch (error) {
-      console.error('Error loading favorites:', error);
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Filter favorites based on favorites store
+  const favoriteProducts = allProducts.filter(p => 
+    favorites.some(f => f.id === p.id && f.type === 'product')
+  );
+  
+  const favoriteStores = allStores.filter(s => 
+    favorites.some(f => f.id === s.id && f.type === 'store')
+  );
+
+  // Debug log
+  useEffect(() => {
+    console.log('Favorites:', favorites);
+    console.log('Favorite Products:', favoriteProducts);
+    console.log('Favorite Stores:', favoriteStores);
+  }, [favorites, favoriteProducts, favoriteStores]);
 
   if (!user) {
     return (
