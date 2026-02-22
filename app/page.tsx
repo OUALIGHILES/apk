@@ -3,21 +3,23 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 import { productsAPI, Product, Category, Provider } from '@/lib/api/products';
 import { API_CONFIG } from '@/config';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
-import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { ShoppingBag, MapPin, Clock, Star } from 'lucide-react';
+import {
+  ShoppingBag, MapPin, Clock, Star, Truck, Utensils,
+  Sparkles, TrendingUp, Coffee, Pill, Wrench, AlertCircle,
+  ChevronRight, Croissant, RefreshCw
+} from 'lucide-react';
 import Link from 'next/link';
+
+const APP_CONFIG = { CURRENCY: 'SAR' };
 
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [stores, setStores] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +27,6 @@ export default function HomePage() {
   const [isMockMode, setIsMockMode] = useState(false);
 
   useEffect(() => {
-    // Check if mock mode is enabled
     setIsMockMode(process.env.NEXT_PUBLIC_USE_MOCK_API === 'true');
     loadData();
   }, [activeCategory]);
@@ -34,273 +35,300 @@ export default function HomePage() {
     try {
       setLoading(true);
       setError(null);
-      
-      // Load products
-      const productsResponse = await productsAPI.getProductList({
-        cat_id: activeCategory || undefined,
-      });
-      
-      if (productsResponse.status === 'success') {
-        setProducts(productsResponse.result);
-      } else if (productsResponse.status === 'error') {
-        setError(productsResponse.message || 'Failed to load products');
-      }
-
-      // Load stores
+      const productsResponse = await productsAPI.getProductList({ cat_id: activeCategory || undefined });
+      if (productsResponse.status === 'success') setProducts(productsResponse.result);
+      else if (productsResponse.status === 'error') setError(productsResponse.message || 'Failed to load products');
       const storesResponse = await productsAPI.getAllStoreList({});
-      if (storesResponse.status === 'success') {
-        setStores(storesResponse.result);
-      }
+      if (storesResponse.status === 'success') setStores(storesResponse.result);
     } catch (error: any) {
-      console.error('Error loading data:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to load data';
-      
-      // Check for database error
-      if (errorMessage.includes('database') || errorMessage.includes('Database')) {
-        setError('The backend server is currently experiencing database issues. Please try again later.');
-      } else {
-        setError(errorMessage);
-      }
+      const msg = error.response?.data?.message || error.message || 'Failed to load data';
+      setError(msg.includes('database') ? 'The server is experiencing database issues. Please try again.' : msg);
     } finally {
       setLoading(false);
     }
   };
 
+  const categories = [
+    { key: null, label: 'All', icon: <ShoppingBag className="w-5 h-5" /> },
+    { key: 'Restaurant', label: 'Restaurant', icon: <Utensils className="w-5 h-5" /> },
+    { key: 'Grocery', label: 'Grocery', icon: <ShoppingBag className="w-5 h-5" /> },
+    { key: 'Pharmacy', label: 'Pharmacy', icon: <Pill className="w-5 h-5" /> },
+    { key: 'Services', label: 'Services', icon: <Wrench className="w-5 h-5" /> },
+    { key: 'Café', label: 'Café', icon: <Coffee className="w-5 h-5" /> },
+    { key: 'Bakery', label: 'Bakery', icon: <Croissant className="w-5 h-5" /> },
+  ];
+
   return (
-    <div className="min-h-screen bg-screenback pb-20">
+    <div className="page-root pb-24">
+      <style>{css}</style>
       <Header title="Kafek" showSearch showCart showNotifications />
-      
-      <main className="max-w-screen-xl mx-auto">
-        {/* Mock API Banner */}
+
+      <main className="w-full">
+
+        {/* Mock Banner */}
         {isMockMode && (
-          <div className="mx-4 mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-lg">🧪</span>
-                <div>
-                  <h3 className="text-sm font-medium text-yellow-800">Mock Data Mode</h3>
-                  <p className="text-xs text-yellow-700">Testing with sample data. Backend API is offline.</p>
-                </div>
-              </div>
-              <button
-                onClick={() => window.location.reload()}
-                className="text-xs text-yellow-800 hover:text-yellow-600 underline"
-              >
-                Refresh
-              </button>
+          <div className="alert-bar alert-mock mx-4 mt-4">
+            <span>🧪</span>
+            <div>
+              <p className="alert-title">Mock Data Mode</p>
+              <p className="alert-sub">Testing with sample data. Backend API is offline.</p>
             </div>
+            <button onClick={() => window.location.reload()} className="alert-action">Refresh</button>
           </div>
         )}
 
         {/* Error Banner */}
         {error && (
-          <div className="mx-4 mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Service Unavailable</h3>
-                <p className="mt-1 text-sm text-red-700">{error}</p>
-                <button
-                  onClick={loadData}
-                  className="mt-2 text-sm font-medium text-red-800 hover:text-red-600"
-                >
-                  Try Again →
-                </button>
-              </div>
+          <div className="alert-bar alert-error mx-4 mt-4">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="alert-title">Service Unavailable</p>
+              <p className="alert-sub">{error}</p>
             </div>
+            <button onClick={loadData} className="alert-action"><RefreshCw className="w-4 h-4" /></button>
           </div>
         )}
 
-        {/* Hero Slider */}
+        {/* ── Hero Slider ── */}
         <section className="mt-4 px-4">
           <Swiper
-            modules={[Navigation, Pagination, Autoplay]}
-            spaceBetween={10}
+            modules={[Pagination, Autoplay]}
+            spaceBetween={0}
             slidesPerView={1}
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 3000 }}
-            loop={true}
-            className="rounded-lg overflow-hidden"
+            pagination={{ clickable: true, dynamicBullets: true }}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            loop
+            className="swiper-hero"
           >
-            <SwiperSlide>
-              <div className="bg-gradient-to-r from-primary to-secondary h-48 flex items-center justify-center">
-                <div className="text-center text-white p-4">
-                  <h2 className="text-2xl font-bold mb-2">Welcome to Kafek</h2>
-                  <p className="text-sm">Order food and services from your favorite stores</p>
+            {[
+              { gradient: 'linear-gradient(135deg,#0A1628 0%,#1a3a6b 100%)', icon: <Sparkles className="w-8 h-8" />, title: 'Welcome to Kafek', sub: 'Order food & services from your favorite stores' },
+              { gradient: 'linear-gradient(135deg,#FF5C3A 0%,#FF9A3C 100%)', icon: <TrendingUp className="w-8 h-8" />, title: 'Special Offers', sub: 'Get up to 50% off on your first order' },
+              { gradient: 'linear-gradient(135deg,#1DB87A 0%,#0A8A58 100%)', icon: <Truck className="w-8 h-8" />, title: 'Fast Delivery', sub: 'Quick and reliable delivery to your doorstep' },
+            ].map((slide, i) => (
+              <SwiperSlide key={i}>
+                <div className="slide-inner" style={{ background: slide.gradient }}>
+                  <div className="slide-glow slide-glow-1" />
+                  <div className="slide-glow slide-glow-2" />
+                  <div className="slide-icon-wrap">{slide.icon}</div>
+                  <h2 className="slide-title">{slide.title}</h2>
+                  <p className="slide-sub">{slide.sub}</p>
                 </div>
-              </div>
-            </SwiperSlide>
-            <SwiperSlide>
-              <div className="bg-gradient-to-r from-orange to-yellow h-48 flex items-center justify-center">
-                <div className="text-center text-white p-4">
-                  <h2 className="text-2xl font-bold mb-2">Special Offers</h2>
-                  <p className="text-sm">Get up to 50% off on your first order</p>
-                </div>
-              </div>
-            </SwiperSlide>
+              </SwiperSlide>
+            ))}
           </Swiper>
         </section>
 
-        {/* Categories */}
-        <section className="mt-6 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-primary">Categories</h2>
-            <Link href="/categories" className="text-sm text-button font-medium">
-              View All
-            </Link>
-          </div>
-          
-          <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
-            <button
-              onClick={() => setActiveCategory(null)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                !activeCategory
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-greyunselect border border-gray-200'
-              }`}
-            >
-              All
-            </button>
-            {/* Categories would be loaded from API */}
-            <button className="flex-shrink-0 px-4 py-2 bg-white rounded-full text-sm font-medium text-greyunselect border border-gray-200">
-              Restaurant
-            </button>
-            <button className="flex-shrink-0 px-4 py-2 bg-white rounded-full text-sm font-medium text-greyunselect border border-gray-200">
-              Grocery
-            </button>
-            <button className="flex-shrink-0 px-4 py-2 bg-white rounded-full text-sm font-medium text-greyunselect border border-gray-200">
-              Pharmacy
-            </button>
-            <button className="flex-shrink-0 px-4 py-2 bg-white rounded-full text-sm font-medium text-greyunselect border border-gray-200">
-              Services
-            </button>
-          </div>
-        </section>
-
-        {/* Popular Stores */}
-        <section className="mt-6 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-primary">Popular Stores</h2>
-            <Link href="/stores" className="text-sm text-button font-medium">
-              View All
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stores.slice(0, 6).map((store) => (
-              <Link key={store.id} href={`/stores/${store.id}`}>
-                <Card padding="none" className="overflow-hidden">
-                  <div className="relative">
-                    <img
-                      src={store.store_cover_image || store.provider_logo || '/placeholder-store.jpg'}
-                      alt={store.store_name}
-                      className="w-full h-32 object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/placeholder-store.jpg';
-                      }}
-                    />
-                    <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
-                      <Star className="w-3 h-3 text-yellow-500 mr-1" />
-                      {store.avg_rating || '0'}
-                    </div>
-                  </div>
-                  <div className="p-3">
-                    <h3 className="font-bold text-primary">{store.store_name}</h3>
-                    <p className="text-sm text-greyunselect mt-1">{store.cat_name}</p>
-                    <div className="flex items-center justify-between mt-2 text-xs text-greyunselect">
-                      <div className="flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {store.open_time} - {store.close_time}
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        {(store.radius || '5')} km
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* Popular Products */}
-        <section className="mt-6 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-primary">Popular Products</h2>
-            <Link href="/products" className="text-sm text-button font-medium">
-              View All
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {products.slice(0, 8).map((product) => (
-              <Link key={product.id} href={`/products/${product.id}`}>
-                <Card padding="none" className="overflow-hidden">
-                  <div className="relative">
-                    <img
-                      src={product.product_images?.[0]?.image_url || `${API_CONFIG.IMAGE_BASE_URL}placeholder.jpg`}
-                      alt={product.item_name}
-                      className="w-full h-32 object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `${API_CONFIG.IMAGE_BASE_URL}placeholder.jpg`;
-                      }}
-                    />
-                    {product.offer_item_price && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-0.5 rounded text-xs font-medium">
-                        OFFER
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <h3 className="font-medium text-sm text-primary line-clamp-2">{product.item_name}</h3>
-                    <div className="flex items-center justify-between mt-2">
-                      <div>
-                        {product.offer_item_price ? (
-                          <>
-                            <span className="text-button font-bold">
-                              {product.offer_item_price} {APP_CONFIG.CURRENCY}
-                            </span>
-                            <span className="text-xs text-greyunselect line-through ml-1">
-                              {product.item_price}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-button font-bold">
-                            {product.item_price} {APP_CONFIG.CURRENCY}
-                          </span>
-                        )}
-                      </div>
-                      <button className="p-1.5 bg-primary text-white rounded-full hover:bg-opacity-90">
-                        <ShoppingBag className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {loading && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-4 rounded-lg">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-center mt-2 text-sm text-greyunselect">Loading...</p>
+        {/* ── Categories ── */}
+        <section className="mt-8 px-4">
+          <div className="section-row">
+            <div>
+              <h2 className="section-title">Categories</h2>
+              <p className="section-sub">Explore what you need</p>
             </div>
+            <Link href="/categories" className="see-all">View All <ChevronRight className="w-4 h-4" /></Link>
           </div>
-        )}
+
+          <div className="cat-strip">
+            {categories.map(({ key, label, icon }) => {
+              const active = activeCategory === key;
+              return (
+                <button key={label} onClick={() => setActiveCategory(key)} className={`cat-btn ${active ? 'cat-active' : ''}`}>
+                  <div className="cat-icon">{icon}</div>
+                  <span className="cat-label">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ── Popular Stores ── */}
+        <section className="mt-8 px-4">
+          <div className="section-row">
+            <div>
+              <h2 className="section-title">Popular Stores</h2>
+              <p className="section-sub">Top-rated stores near you</p>
+            </div>
+            <Link href="/stores" className="see-all">View All <ChevronRight className="w-4 h-4" /></Link>
+          </div>
+
+          <div className="stores-grid">
+            {stores.slice(0, 6).map((store) => (
+              <Link key={store.id} href={`/stores/${store.id}`} className="store-card">
+                <div className="store-img-wrap">
+                  <img
+                    src={store.store_cover_image || store.provider_logo || '/placeholder-store.jpg'}
+                    alt={store.store_name}
+                    className="store-img"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-store.jpg'; }}
+                  />
+                  <div className="store-scrim" />
+                  <div className="store-rating">
+                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                    {store.avg_rating || '0'}
+                  </div>
+                  <div className="store-name-overlay">{store.store_name}</div>
+                </div>
+                <div className="store-footer">
+                  <span className="store-cat">{store.cat_name}</span>
+                  <div className="store-meta">
+                    <span className="meta-chip-sm"><Clock className="w-3 h-3" />{store.open_time}–{store.close_time}</span>
+                    <span className="meta-chip-sm"><MapPin className="w-3 h-3" />{store.radius || '5'} km</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Popular Products ── */}
+        <section className="mt-8 px-4 mb-6">
+          <div className="section-row">
+            <div>
+              <h2 className="section-title">Popular Products</h2>
+              <p className="section-sub">Best sellers just for you</p>
+            </div>
+            <Link href="/products" className="see-all">View All <ChevronRight className="w-4 h-4" /></Link>
+          </div>
+
+          <div className="products-grid">
+            {products.slice(0, 8).map((product) => (
+              <Link key={product.id} href={`/products/${product.id}`} className="product-card">
+                <div className="product-img-wrap">
+                  <img
+                    src={product.product_images?.[0]?.image_url || `${API_CONFIG.IMAGE_BASE_URL}placeholder.jpg`}
+                    alt={product.item_name}
+                    className="product-img"
+                    onError={(e) => { (e.target as HTMLImageElement).src = `${API_CONFIG.IMAGE_BASE_URL}placeholder.jpg`; }}
+                  />
+                  {product.offer_item_price && <span className="offer-badge"><Sparkles className="w-3 h-3" />OFFER</span>}
+                </div>
+                <div className="product-body">
+                  <h3 className="product-name">{product.item_name}</h3>
+                  <div className="product-footer">
+                    {product.offer_item_price ? (
+                      <div>
+                        <span className="price-offer">{product.offer_item_price} SAR</span>
+                        <span className="price-old">{product.item_price}</span>
+                      </div>
+                    ) : (
+                      <span className="price-main">{product.item_price} SAR</span>
+                    )}
+                    <button className="add-btn"><ShoppingBag className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </main>
+
+      {/* Loading overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-card">
+            <div className="loader" />
+            <p className="loading-text">Loading...</p>
+          </div>
+        </div>
+      )}
 
       <BottomNavigation />
     </div>
   );
 }
 
-const APP_CONFIG = {
-  CURRENCY: 'SAR',
-};
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --bg: #F7F6F2; --surface: #FFFFFF; --primary: #0A1628;
+    --accent: #3D6FFF; --accent2: #FF5C3A; --green: #1DB87A;
+    --muted: #8B8FA8; --border: #ECEDF2; --radius: 20px; --radius-sm: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .page-root { min-height: 100vh; background: var(--bg); }
+  .loader { width: 40px; height: 40px; border: 3px solid rgba(61,111,255,.15); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Alerts */
+  .alert-bar { display: flex; align-items: center; gap: 12px; border-radius: var(--radius); padding: 14px 16px; }
+  .alert-mock { background: #FFFBEB; border: 1px solid #FDE68A; }
+  .alert-error { background: #FFF5F5; border: 1px solid #FED7D7; color: #C53030; }
+  .alert-title { font-weight: 700; font-size: 13px; font-family: 'Sora',sans-serif; }
+  .alert-sub { font-size: 12px; opacity: .75; margin-top: 2px; }
+  .alert-action { font-size: 12px; font-weight: 700; padding: 6px 12px; background: rgba(0,0,0,.07); border-radius: 8px; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+
+  /* Swiper hero */
+  .swiper-hero { border-radius: 24px; overflow: hidden; }
+  .slide-inner { height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; position: relative; overflow: hidden; }
+  .slide-glow { position: absolute; border-radius: 50%; filter: blur(48px); opacity: .25; }
+  .slide-glow-1 { width: 150px; height: 150px; background: rgba(255,255,255,.5); top: -30px; left: -30px; }
+  .slide-glow-2 { width: 180px; height: 180px; background: rgba(255,255,255,.3); bottom: -40px; right: -40px; }
+  .slide-icon-wrap { position: relative; z-index: 1; width: 56px; height: 56px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(8px); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #fff; margin-bottom: 14px; }
+  .slide-title { position: relative; z-index: 1; font-family: 'Sora',sans-serif; font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+  .slide-sub { position: relative; z-index: 1; font-size: 13px; color: rgba(255,255,255,.75); max-width: 260px; }
+
+  /* Section headers */
+  .section-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-family: 'Sora',sans-serif; font-size: 18px; font-weight: 800; color: var(--primary); }
+  .section-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .see-all { display: flex; align-items: center; gap: 2px; font-family: 'Sora',sans-serif; font-size: 12px; font-weight: 700; color: var(--accent); text-decoration: none; padding-bottom: 2px; }
+
+  /* Categories */
+  .cat-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .cat-strip::-webkit-scrollbar { display: none; }
+  .cat-btn { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 10px; border-radius: var(--radius); background: var(--surface); transition: all .2s; box-shadow: 0 1px 4px rgba(0,0,0,.05); min-width: 72px; }
+  .cat-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+  .cat-active { background: var(--primary) !important; }
+  .cat-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(61,111,255,.08); color: var(--accent); transition: all .2s; }
+  .cat-active .cat-icon { background: rgba(255,255,255,.15); color: #fff; }
+  .cat-label { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; font-family: 'Sora',sans-serif; }
+  .cat-active .cat-label { color: rgba(255,255,255,.8); }
+
+  /* Stores */
+  .stores-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+  @media(min-width:640px){ .stores-grid { grid-template-columns: repeat(3,1fr); } }
+  @media(min-width:1024px){ .stores-grid { grid-template-columns: repeat(4,1fr); } }
+  @media(min-width:1280px){ .stores-grid { grid-template-columns: repeat(5,1fr); } }
+  .store-card { background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.05); text-decoration: none; transition: transform .2s, box-shadow .2s; display: block; }
+  .store-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,.1); }
+  .store-img-wrap { position: relative; height: 150px; overflow: hidden; }
+  .store-img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .store-card:hover .store-img { transform: scale(1.06); }
+  .store-scrim { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(10,22,40,.8) 100%); }
+  .store-rating { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(255,255,255,.95); backdrop-filter: blur(6px); border-radius: 100px; font-size: 12px; font-weight: 700; font-family: 'Sora',sans-serif; }
+  .store-name-overlay { position: absolute; bottom: 12px; left: 14px; right: 14px; font-family: 'Sora',sans-serif; font-size: 16px; font-weight: 700; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.3); }
+  .store-footer { padding: 12px 14px; }
+  .store-cat { font-size: 12px; color: var(--muted); display: block; margin-bottom: 8px; }
+  .store-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .meta-chip-sm { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--bg); border-radius: 100px; font-size: 11px; font-weight: 500; color: var(--muted); }
+
+  /* Products */
+  .products-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+  @media(min-width:640px){ .products-grid { grid-template-columns: repeat(3,1fr); } }
+  @media(min-width:1024px){ .products-grid { grid-template-columns: repeat(5,1fr); } }
+  @media(min-width:1280px){ .products-grid { grid-template-columns: repeat(6,1fr); } }
+  .product-card { background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.05); text-decoration: none; transition: transform .2s, box-shadow .2s; display: block; }
+  .product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,.1); }
+  .product-img-wrap { position: relative; height: 140px; overflow: hidden; }
+  .product-img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .product-card:hover .product-img { transform: scale(1.07); }
+  .offer-badge { position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 4px; background: var(--green); color: #fff; font-size: 9px; font-weight: 800; padding: 4px 8px; border-radius: 100px; font-family: 'Sora',sans-serif; letter-spacing: .05em; }
+  .product-body { padding: 12px; }
+  .product-name { font-family: 'Sora',sans-serif; font-size: 13px; font-weight: 700; color: var(--primary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.6em; margin-bottom: 10px; }
+  .product-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .price-main { font-family: 'Sora',sans-serif; font-size: 15px; font-weight: 800; color: var(--primary); }
+  .price-offer { font-family: 'Sora',sans-serif; font-size: 14px; font-weight: 800; color: var(--green); display: block; }
+  .price-old { font-size: 11px; color: var(--muted); text-decoration: line-through; display: block; }
+  .add-btn { width: 34px; height: 34px; border-radius: 10px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
+  .add-btn:hover { transform: scale(1.1); }
+  .add-btn:active { transform: scale(.92); }
+
+  /* Loading overlay */
+  .loading-overlay { position: fixed; inset: 0; background: rgba(10,22,40,.6); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .loading-card { background: var(--surface); border-radius: 24px; padding: 32px 40px; display: flex; flex-direction: column; align-items: center; gap: 16px; box-shadow: 0 24px 64px rgba(0,0,0,.3); }
+  .loading-text { font-family: 'Sora',sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); }
+
+  /* Swiper dot styling */
+  .swiper-pagination-bullet { background: rgba(255,255,255,.5) !important; }
+  .swiper-pagination-bullet-active { background: #fff !important; }
+`;

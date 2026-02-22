@@ -4,23 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 import { useAuthStore } from '@/store/authStore';
 import { ordersAPIExtended, OrderDetails } from '@/lib/api/extended';
-import { 
-  Package, 
-  Clock, 
-  MapPin, 
-  Phone, 
-  CreditCard, 
-  DollarSign,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Truck,
-  Chef,
-  User
+import {
+  Package, Clock, MapPin, Phone, CreditCard,
+  CheckCircle, XCircle, AlertCircle, Truck, User, ChefHat,
+  ArrowLeft
 } from 'lucide-react';
 
 export default function OrderDetailsPage() {
@@ -34,9 +23,7 @@ export default function OrderDetailsPage() {
   const [showCancelForm, setShowCancelForm] = useState(false);
 
   useEffect(() => {
-    if (user && params.id) {
-      loadOrderDetails();
-    }
+    if (user && params.id) loadOrderDetails();
   }, [user, params.id]);
 
   const loadOrderDetails = async () => {
@@ -53,15 +40,10 @@ export default function OrderDetailsPage() {
   };
 
   const handleCancelOrder = async () => {
-    if (!cancelReason.trim()) {
-      alert('Please provide a reason for cancellation');
-      return;
-    }
-
+    if (!cancelReason.trim()) { alert('Please provide a reason for cancellation'); return; }
     try {
       setCancelling(true);
       await ordersAPIExtended.cancelOrder(params.id as string, cancelReason);
-      alert('Order cancelled successfully');
       setShowCancelForm(false);
       loadOrderDetails();
     } catch (error: any) {
@@ -71,259 +53,264 @@ export default function OrderDetailsPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusMeta = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'pending':
-        return <Clock className="w-6 h-6 text-yellow-600" />;
+      case 'pending':             return { color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', icon: <Clock className="w-5 h-5" />, label: 'Pending' };
       case 'accepted':
-      case 'confirmed':
-        return <CheckCircle className="w-6 h-6 text-green-600" />;
-      case 'preparing':
-        return <Chef className="w-6 h-6 text-blue-600" />;
+      case 'confirmed':           return { color: '#1DB87A', bg: 'rgba(29,184,122,0.12)', icon: <CheckCircle className="w-5 h-5" />, label: 'Confirmed' };
+      case 'preparing':           return { color: '#3D6FFF', bg: 'rgba(61,111,255,0.12)', icon: <ChefHat className="w-5 h-5" />, label: 'Preparing' };
       case 'on_way':
-      case 'out_for_delivery':
-        return <Truck className="w-6 h-6 text-primary" />;
-      case 'delivered':
-        return <Package className="w-6 h-6 text-green-600" />;
-      case 'cancelled':
-        return <XCircle className="w-6 h-6 text-red-600" />;
-      default:
-        return <Package className="w-6 h-6 text-greyunselect" />;
+      case 'out_for_delivery':    return { color: '#3D6FFF', bg: 'rgba(61,111,255,0.12)', icon: <Truck className="w-5 h-5" />, label: 'On the way' };
+      case 'delivered':           return { color: '#1DB87A', bg: 'rgba(29,184,122,0.12)', icon: <Package className="w-5 h-5" />, label: 'Delivered' };
+      case 'cancelled':           return { color: '#FF5C3A', bg: 'rgba(255,92,58,0.12)', icon: <XCircle className="w-5 h-5" />, label: 'Cancelled' };
+      default:                    return { color: '#8B8FA8', bg: 'rgba(139,143,168,0.12)', icon: <Package className="w-5 h-5" />, label: status };
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-50';
-      case 'accepted':
-      case 'confirmed':
-        return 'text-green-600 bg-green-50';
-      case 'preparing':
-        return 'text-blue-600 bg-blue-50';
-      case 'on_way':
-      case 'out_for_delivery':
-        return 'text-primary bg-primary/10';
-      case 'delivered':
-        return 'text-green-600 bg-green-50';
-      case 'cancelled':
-        return 'text-red-600 bg-red-50';
-      default:
-        return 'text-greyunselect bg-gray-100';
-    }
-  };
+  const canCancel = order && ['pending', 'accepted', 'confirmed'].includes(order.order_status.toLowerCase());
 
-  const canCancel = order && 
-    ['pending', 'accepted', 'confirmed'].includes(order.order_status.toLowerCase());
-
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
+  if (!user) { router.push('/login'); return null; }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-screenback">
-        <Header title="Order Details" />
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-        </div>
+      <div className="page-root flex items-center justify-center">
+        <style>{css}</style>
+        <div className="loader" />
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-screenback">
+      <div className="page-root">
+        <style>{css}</style>
         <Header title="Order Details" />
-        <Card className="mx-4 mt-8 text-center py-12">
-          <AlertCircle className="w-16 h-16 mx-auto text-greyunselect/30 mb-4" />
-          <h3 className="text-xl font-bold text-primary mb-2">Order Not Found</h3>
-          <p className="text-greyunselect mb-6">This order doesn't exist or was removed</p>
-          <Button onClick={() => router.push('/orders')}>View My Orders</Button>
-        </Card>
+        <div className="empty-state-full">
+          <AlertCircle className="w-14 h-14 opacity-15 mb-4" />
+          <p className="empty-title">Order Not Found</p>
+          <p className="empty-sub">This order doesn't exist or was removed</p>
+          <button onClick={() => router.push('/orders')} className="pill-btn mt-6">View My Orders</button>
+        </div>
       </div>
     );
   }
 
+  const meta = getStatusMeta(order.order_status);
+  const subtotal = (parseFloat(order.total_amount) - parseFloat(order.delivery_fee)).toFixed(2);
+
   return (
-    <div className="min-h-screen bg-screenback pb-20">
+    <div className="page-root pb-28">
+      <style>{css}</style>
       <Header title="Order Details" />
 
-      <main className="max-w-screen-xl mx-auto px-4 py-4">
-        {/* Order Status */}
-        <Card className="mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-primary">Order #{order.id}</h2>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.order_status)}`}>
-              {order.order_status.replace('_', ' ')}
-            </span>
-          </div>
-          
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-            {getStatusIcon(order.order_status)}
-            <div>
-              <p className="font-medium text-primary">
-                {order.order_status.replace('_', ' ').toUpperCase()}
-              </p>
-              <p className="text-sm text-greyunselect">
-                {new Date(order.order_date).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-        </Card>
+      <main className="body-wrap">
 
-        {/* Driver Details (if assigned) */}
+        {/* ── Status Hero ── */}
+        <div className="status-hero" style={{ background: `linear-gradient(135deg, #0A1628 0%, #142240 100%)` }}>
+          <div className="status-hero-glow" style={{ background: meta.color }} />
+          <div className="status-icon-wrap" style={{ color: meta.color, background: meta.bg }}>
+            {meta.icon}
+          </div>
+          <div>
+            <p className="status-hero-label">Order #{order.id}</p>
+            <p className="status-hero-title" style={{ color: meta.color }}>{meta.label}</p>
+            <p className="status-hero-date">{new Date(order.order_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</p>
+          </div>
+        </div>
+
+        {/* ── Driver ── */}
         {order.driver_details && (
-          <Card className="mb-4">
-            <h3 className="font-bold text-primary mb-3 flex items-center">
-              <Truck className="w-5 h-5 mr-2" />
-              Delivery Driver
-            </h3>
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="w-6 h-6 text-primary" />
+          <div className="section-card">
+            <div className="section-header"><Truck className="w-4 h-4" /><span>Delivery Driver</span></div>
+            <div className="driver-row">
+              <div className="driver-avatar"><User className="w-5 h-5" /></div>
+              <div className="driver-info">
+                <span className="driver-name">{order.driver_details.first_name} {order.driver_details.last_name}</span>
+                <span className="driver-sub">{order.driver_details.vehicle_type} · {order.driver_details.vehicle_no}</span>
               </div>
-              <div className="flex-1">
-                <p className="font-medium text-primary">
-                  {order.driver_details.first_name} {order.driver_details.last_name}
-                </p>
-                <p className="text-sm text-greyunselect">
-                  {order.driver_details.vehicle_type} - {order.driver_details.vehicle_no}
-                </p>
-              </div>
-              <a
-                href={`tel:${order.driver_details.mobile}`}
-                className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600"
-              >
+              <a href={`tel:${order.driver_details.mobile}`} className="call-btn">
                 <Phone className="w-5 h-5" />
               </a>
             </div>
-          </Card>
+          </div>
         )}
 
-        {/* Order Items */}
-        <Card className="mb-4">
-          <h3 className="font-bold text-primary mb-3 flex items-center">
-            <Package className="w-5 h-5 mr-2" />
-            Order Items
-          </h3>
-          <div className="space-y-3">
+        {/* ── Items ── */}
+        <div className="section-card">
+          <div className="section-header"><Package className="w-4 h-4" /><span>Order Items</span></div>
+          <div className="items-list">
             {order.order_details?.map((item) => (
-              <div key={item.id} className="flex justify-between items-center py-2 border-b last:border-0">
-                <div>
-                  <p className="font-medium text-primary">{item.item_name}</p>
-                  <p className="text-sm text-greyunselect">
-                    {item.item_quantity} x {item.item_price} SAR
-                  </p>
-                </div>
-                <p className="font-bold text-button">{item.total_price} SAR</p>
+              <div key={item.id} className="item-row">
+                <div className="item-qty">{item.item_quantity}×</div>
+                <span className="item-name">{item.item_name}</span>
+                <span className="item-price">{item.total_price} SAR</span>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
 
-        {/* Delivery Address */}
-        <Card className="mb-4">
-          <h3 className="font-bold text-primary mb-3 flex items-center">
-            <MapPin className="w-5 h-5 mr-2" />
-            Delivery Address
-          </h3>
-          <p className="text-sm text-greyunselect">{order.delivery_address}</p>
-        </Card>
+        {/* ── Address ── */}
+        <div className="section-card">
+          <div className="section-header"><MapPin className="w-4 h-4" /><span>Delivery Address</span></div>
+          <p className="address-text">{order.delivery_address}</p>
+        </div>
 
-        {/* Payment Summary */}
-        <Card className="mb-4">
-          <h3 className="font-bold text-primary mb-3 flex items-center">
-            <CreditCard className="w-5 h-5 mr-2" />
-            Payment Details
-          </h3>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-greyunselect">Payment Method</span>
-              <span className="font-medium capitalize">{order.payment_method}</span>
+        {/* ── Payment ── */}
+        <div className="section-card">
+          <div className="section-header"><CreditCard className="w-4 h-4" /><span>Payment Details</span></div>
+          <div className="payment-list">
+            <div className="payment-row">
+              <span className="payment-label">Payment Method</span>
+              <span className="payment-value capitalize">{order.payment_method}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-greyunselect">Subtotal</span>
-              <span className="font-medium">
-                {(parseFloat(order.total_amount) - parseFloat(order.delivery_fee)).toFixed(2)} SAR
-              </span>
+            <div className="payment-row">
+              <span className="payment-label">Subtotal</span>
+              <span className="payment-value">{subtotal} SAR</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-greyunselect">Delivery Fee</span>
-              <span className="font-medium">{order.delivery_fee} SAR</span>
+            <div className="payment-row">
+              <span className="payment-label">Delivery Fee</span>
+              <span className="payment-value">{order.delivery_fee} SAR</span>
             </div>
-            <div className="border-t pt-2 flex justify-between">
-              <span className="font-bold text-primary">Total</span>
-              <span className="font-bold text-button">{order.total_amount} SAR</span>
+            <div className="payment-row payment-total">
+              <span>Total</span>
+              <span className="total-amount">{order.total_amount} SAR</span>
             </div>
           </div>
-        </Card>
+        </div>
 
-        {/* Cancel Order Button */}
+        {/* ── Cancel ── */}
         {canCancel && (
-          <Card className="mb-4">
+          <div className="section-card">
             {!showCancelForm ? (
-              <Button
-                variant="outline"
-                onClick={() => setShowCancelForm(true)}
-                className="w-full border-red-200 text-red-600 hover:bg-red-50"
-              >
-                <XCircle className="w-5 h-5 mr-2" />
-                Cancel Order
-              </Button>
+              <button onClick={() => setShowCancelForm(true)} className="cancel-trigger">
+                <XCircle className="w-4 h-4" /> Cancel Order
+              </button>
             ) : (
-              <div className="space-y-3">
-                <h3 className="font-bold text-red-600">Cancel Order</h3>
-                <p className="text-sm text-greyunselect">
-                  Please provide a reason for cancelling this order:
-                </p>
+              <div className="cancel-form">
+                <p className="cancel-form-title">Cancel Order</p>
+                <p className="cancel-form-sub">Please provide a reason:</p>
                 <textarea
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="cancel-textarea"
                   rows={3}
                   placeholder="Why do you want to cancel?"
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
                 />
-                <div className="flex space-x-3">
-                  <Button
+                <div className="cancel-actions">
+                  <button
                     onClick={handleCancelOrder}
-                    loading={cancelling}
-                    className="flex-1 bg-red-600 hover:bg-red-700"
+                    disabled={cancelling}
+                    className="confirm-cancel-btn"
                   >
-                    Confirm Cancel
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowCancelForm(false);
-                      setCancelReason('');
-                    }}
-                    className="flex-1"
+                    {cancelling ? 'Cancelling...' : 'Confirm Cancel'}
+                  </button>
+                  <button
+                    onClick={() => { setShowCancelForm(false); setCancelReason(''); }}
+                    className="go-back-btn"
                   >
                     Go Back
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}
-          </Card>
+          </div>
         )}
 
-        {/* Already cancelled */}
+        {/* ── Already cancelled ── */}
         {order.order_status.toLowerCase() === 'cancelled' && (
-          <Card className="mb-4 bg-red-50 border-red-200">
-            <div className="flex items-center space-x-3">
-              <XCircle className="w-6 h-6 text-red-600" />
-              <div>
-                <p className="font-bold text-red-800">Order Cancelled</p>
-                <p className="text-sm text-red-600">This order has been cancelled</p>
-              </div>
+          <div className="cancelled-banner">
+            <XCircle className="w-5 h-5" />
+            <div>
+              <p className="cancelled-title">Order Cancelled</p>
+              <p className="cancelled-sub">This order has been cancelled</p>
             </div>
-          </Card>
+          </div>
         )}
+
       </main>
 
       <BottomNavigation activeTab="orders" />
     </div>
   );
 }
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=DM+Sans:wght@400;500&display=swap');
+  :root {
+    --bg: #F7F6F2; --surface: #FFFFFF; --primary: #0A1628;
+    --accent: #3D6FFF; --accent2: #FF5C3A; --green: #1DB87A;
+    --muted: #8B8FA8; --border: #ECEDF2; --radius: 20px; --radius-sm: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .page-root { min-height: 100vh; background: var(--bg); }
+  .loader { width: 44px; height: 44px; border: 3px solid rgba(61,111,255,.15); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty */
+  .empty-state-full { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55vh; padding: 24px; }
+  .empty-title { font-family: 'Sora',sans-serif; font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--muted); }
+  .pill-btn { padding: 12px 28px; background: var(--primary); color: #fff; border-radius: 100px; font-family: 'Sora',sans-serif; font-weight: 700; font-size: 14px; text-decoration: none; display: inline-block; cursor: pointer; border: none; }
+
+  /* Body */
+  .body-wrap { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* Status hero */
+  .status-hero { position: relative; border-radius: var(--radius); padding: 24px 22px; display: flex; align-items: center; gap: 18px; overflow: hidden; }
+  .status-hero-glow { position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; border-radius: 50%; filter: blur(50px); opacity: .18; pointer-events: none; }
+  .status-icon-wrap { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .status-hero-label { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-bottom: 3px; font-family: 'Sora',sans-serif; }
+  .status-hero-title { font-family: 'Sora',sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .status-hero-date { font-size: 12px; color: rgba(255,255,255,.45); }
+
+  /* Section cards */
+  .section-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .section-header { display: flex; align-items: center; gap: 7px; font-family: 'Sora',sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+  /* Driver */
+  .driver-row { display: flex; align-items: center; gap: 12px; }
+  .driver-avatar { width: 46px; height: 46px; border-radius: 14px; background: rgba(61,111,255,.08); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0; }
+  .driver-info { flex: 1; }
+  .driver-name { display: block; font-family: 'Sora',sans-serif; font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 3px; }
+  .driver-sub { font-size: 12px; color: var(--muted); }
+  .call-btn { width: 42px; height: 42px; border-radius: 14px; background: var(--green); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
+  .call-btn:hover { transform: scale(1.08); }
+
+  /* Items */
+  .items-list { display: flex; flex-direction: column; gap: 10px; }
+  .item-row { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .item-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .item-qty { width: 28px; height: 28px; border-radius: 8px; background: rgba(61,111,255,.08); color: var(--accent); font-family: 'Sora',sans-serif; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .item-name { flex: 1; font-size: 14px; font-weight: 500; color: var(--primary); }
+  .item-price { font-family: 'Sora',sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); }
+
+  /* Address */
+  .address-text { font-size: 14px; line-height: 1.6; color: var(--muted); }
+
+  /* Payment */
+  .payment-list { display: flex; flex-direction: column; gap: 10px; }
+  .payment-row { display: flex; align-items: center; justify-content: space-between; }
+  .payment-label { font-size: 13px; color: var(--muted); }
+  .payment-value { font-size: 13px; font-weight: 600; color: var(--primary); }
+  .payment-total { padding-top: 12px; border-top: 1px solid var(--border); font-family: 'Sora',sans-serif; font-size: 15px; font-weight: 700; color: var(--primary); }
+  .total-amount { font-family: 'Sora',sans-serif; font-size: 20px; font-weight: 800; color: var(--primary); }
+
+  /* Cancel */
+  .cancel-trigger { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 14px; border: 1.5px dashed rgba(255,92,58,.4); color: var(--accent2); font-family: 'Sora',sans-serif; font-size: 14px; font-weight: 700; transition: all .15s; }
+  .cancel-trigger:hover { background: rgba(255,92,58,.05); border-style: solid; }
+  .cancel-form-title { font-family: 'Sora',sans-serif; font-size: 15px; font-weight: 700; color: var(--accent2); margin-bottom: 4px; }
+  .cancel-form-sub { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .cancel-textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 14px; font-family: 'DM Sans',sans-serif; font-size: 14px; color: var(--primary); background: var(--bg); outline: none; resize: none; transition: border-color .15s; }
+  .cancel-textarea:focus { border-color: var(--accent); }
+  .cancel-actions { display: flex; gap: 10px; margin-top: 12px; }
+  .confirm-cancel-btn { flex: 1; padding: 13px; border-radius: 14px; background: var(--accent2); color: #fff; font-family: 'Sora',sans-serif; font-size: 14px; font-weight: 700; transition: all .15s; }
+  .confirm-cancel-btn:hover { background: #e54a2e; }
+  .confirm-cancel-btn:disabled { opacity: .6; }
+  .go-back-btn { flex: 1; padding: 13px; border-radius: 14px; background: var(--bg); color: var(--primary); font-family: 'Sora',sans-serif; font-size: 14px; font-weight: 700; border: 1.5px solid var(--border); transition: all .15s; }
+  .go-back-btn:hover { background: #ECEDF2; }
+
+  /* Cancelled banner */
+  .cancelled-banner { display: flex; align-items: center; gap: 12px; padding: 16px 18px; background: rgba(255,92,58,.08); border: 1px solid rgba(255,92,58,.2); border-radius: var(--radius); color: var(--accent2); }
+  .cancelled-title { font-family: 'Sora',sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .cancelled-sub { font-size: 12px; opacity: .75; }
+`;

@@ -4,19 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import { Mail, Lock, User, Phone, Eye, EyeOff, Coffee, Check } from 'lucide-react';
 import { authAPI } from '@/lib/api/auth';
 import { useAuthStore } from '@/store/authStore';
 
 interface SignupForm {
-  first_name: string;
-  last_name: string;
-  email: string;
-  mobile: string;
-  password: string;
-  confirm_password: string;
+  first_name: string; last_name: string; email: string;
+  mobile: string; password: string; confirm_password: string;
   gender: 'Male' | 'Female';
 }
 
@@ -26,288 +20,194 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-
   const { register, handleSubmit, watch, formState: { errors } } = useForm<SignupForm>();
-
   const password = watch('password');
 
   const onSubmit = async (data: SignupForm) => {
     try {
-      setLoading(true);
-      setError('');
-
-      const response = await authAPI.signup({
-        first_name: data.first_name,
-        last_name: data.last_name,
-        email: data.email,
-        mobile: data.mobile,
-        mobile_with_code: data.mobile,
-        password: data.password,
-        gender: data.gender,
-        type: 'USER',
-      });
-
+      setLoading(true); setError('');
+      const response = await authAPI.signup({ first_name: data.first_name, last_name: data.last_name, email: data.email, mobile: data.mobile, mobile_with_code: data.mobile, password: data.password, gender: data.gender, type: 'USER' });
       if (response.status === 'success' && response.result) {
-        setUser(response.result);
-        setToken(response.result.token);
+        setUser(response.result); setToken(response.result.token);
         localStorage.setItem('user_id', response.result.id);
         router.push('/');
-      } else {
-        setError(response.message || 'Signup failed');
-      }
-    } catch (err: any) {
-      console.error('Signup error:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Signup failed. Please try again.';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+      } else setError(response.message || 'Signup failed');
+    } catch (err: any) { setError(err.response?.data?.message || 'Signup failed. Please try again.'); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary/90 to-secondary relative overflow-hidden">
-      {/* Animated Background Shapes */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse delay-500"></div>
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="pt-8 pb-4">
-          <div className="max-w-md mx-auto px-4">
-            <Link href="/" className="inline-block">
-              <div className="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center transform hover:scale-105 transition-transform">
-                <span className="text-3xl font-bold text-primary">K</span>
-              </div>
-            </Link>
-          </div>
+    <div className="auth-root">
+      <style>{css}</style>
+      <div className="bg-blob bg-blob-1" /><div className="bg-blob bg-blob-2" />
+      <div className="auth-scroll">
+        <div className="auth-logo-wrap">
+          <Link href="/" className="auth-logo">
+            <div className="logo-box"><Coffee className="w-6 h-6 logo-icon" /></div>
+            <span className="logo-text">Kafek</span>
+          </Link>
+        </div>
+        <div className="auth-headline">
+          <h1 className="auth-title">Create account</h1>
+          <p className="auth-sub">Join Kafek and start your journey</p>
         </div>
 
-        <main className="max-w-md mx-auto px-4 pb-8">
-          {/* Welcome Section */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Create Account</h1>
-            <p className="text-white/80 text-lg">Join Kafek and start your journey</p>
-          </div>
-
-          {/* Signup Card */}
-          <div className="bg-white rounded-3xl shadow-2xl p-8 transform transition-all hover:shadow-3xl">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Input
-                    label="First Name *"
-                    type="text"
-                    placeholder="First name"
-                    icon={<User className="w-5 h-5" />}
-                    className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    {...register('first_name', { required: 'First name is required' })}
-                    error={errors.first_name?.message}
-                  />
+        <div className="auth-card">
+          <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
+            {/* Name row */}
+            <div className="name-row">
+              <div className="field-group">
+                <label className="field-label">First Name</label>
+                <div className="field-wrap">
+                  <User className="field-icon" />
+                  <input type="text" placeholder="First" className={`field-input ${errors.first_name ? 'field-error-border' : ''}`}
+                    {...register('first_name', { required: 'Required' })} />
                 </div>
-                <div>
-                  <Input
-                    label="Last Name *"
-                    type="text"
-                    placeholder="Last name"
-                    className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    {...register('last_name', { required: 'Last name is required' })}
-                    error={errors.last_name?.message}
-                  />
-                </div>
+                {errors.first_name && <p className="field-err-msg">{errors.first_name.message}</p>}
               </div>
-
-              {/* Email */}
-              <div>
-                <Input
-                  label="Email Address *"
-                  type="email"
-                  placeholder="Enter your email"
-                  icon={<Mail className="w-5 h-5" />}
-                  className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address',
-                    },
-                  })}
-                  error={errors.email?.message}
-                />
-              </div>
-
-              {/* Mobile */}
-              <div>
-                <Input
-                  label="Mobile Number *"
-                  type="tel"
-                  placeholder="Enter your mobile number"
-                  icon={<Phone className="w-5 h-5" />}
-                  className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  {...register('mobile', { required: 'Mobile number is required' })}
-                  error={errors.mobile?.message}
-                />
-              </div>
-
-              {/* Gender & Password Toggle */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
-                  <select
-                    {...register('gender', { required: 'Gender is required' })}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  >
-                    <option value="">Select</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                  {errors.gender && (
-                    <p className="mt-1 text-sm text-red-500">{errors.gender.message}</p>
-                  )}
+              <div className="field-group">
+                <label className="field-label">Last Name</label>
+                <div className="field-wrap">
+                  <input type="text" placeholder="Last" className={`field-input field-input-npl ${errors.last_name ? 'field-error-border' : ''}`}
+                    {...register('last_name', { required: 'Required' })} />
                 </div>
-                <div className="flex items-end pb-2">
-                  <label className="flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={showPassword}
-                      onChange={(e) => setShowPassword(e.target.checked)}
-                      className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary" 
-                    />
-                    <span className="ml-2 text-sm text-gray-600">Show password</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <Input
-                  label="Password *"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a strong password"
-                  icon={<Lock className="w-5 h-5" />}
-                  className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  {...register('password', {
-                    required: 'Password is required',
-                    minLength: {
-                      value: 6,
-                      message: 'Password must be at least 6 characters',
-                    },
-                  })}
-                  error={errors.password?.message}
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <Input
-                  label="Confirm Password *"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Confirm your password"
-                  icon={<Lock className="w-5 h-5" />}
-                  className="bg-gray-50 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  {...register('confirm_password', {
-                    required: 'Please confirm your password',
-                    validate: (value) => value === password || 'Passwords do not match',
-                  })}
-                  error={errors.confirm_password?.message}
-                />
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl flex items-center">
-                  <span className="mr-2">⚠️</span>
-                  {error}
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <Button 
-                type="submit" 
-                fullWidth 
-                loading={loading} 
-                size="lg"
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-              >
-                {loading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating account...
-                  </span>
-                ) : (
-                  'Create Account'
-                )}
-              </Button>
-            </form>
-
-            {/* Divider */}
-            <div className="my-6 flex items-center">
-              <div className="flex-1 border-t border-gray-200"></div>
-              <span className="px-4 text-sm text-gray-400">Already have an account?</span>
-              <div className="flex-1 border-t border-gray-200"></div>
-            </div>
-
-            {/* Login Link */}
-            <div className="text-center">
-              <Link 
-                href="/login" 
-                className="inline-flex items-center space-x-2 text-primary font-bold hover:underline transition-all"
-              >
-                <span>Sign In Here</span>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
-
-            {/* Benefits Section */}
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 text-center">Why join Kafek?</h3>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Order from your favorite stores</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Track your orders in real-time</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Exclusive offers and discounts</span>
-                </div>
+                {errors.last_name && <p className="field-err-msg">{errors.last_name.message}</p>}
               </div>
             </div>
+
+            {/* Email */}
+            <div className="field-group">
+              <label className="field-label">Email Address</label>
+              <div className="field-wrap">
+                <Mail className="field-icon" />
+                <input type="email" placeholder="Enter your email" className={`field-input ${errors.email ? 'field-error-border' : ''}`}
+                  {...register('email', { required: 'Required', pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Invalid email' } })} />
+              </div>
+              {errors.email && <p className="field-err-msg">{errors.email.message}</p>}
+            </div>
+
+            {/* Mobile */}
+            <div className="field-group">
+              <label className="field-label">Mobile Number</label>
+              <div className="field-wrap">
+                <Phone className="field-icon" />
+                <input type="tel" placeholder="Enter your mobile number" className={`field-input ${errors.mobile ? 'field-error-border' : ''}`}
+                  {...register('mobile', { required: 'Required' })} />
+              </div>
+              {errors.mobile && <p className="field-err-msg">{errors.mobile.message}</p>}
+            </div>
+
+            {/* Gender */}
+            <div className="field-group">
+              <label className="field-label">Gender</label>
+              <select className={`field-input field-select ${errors.gender ? 'field-error-border' : ''}`}
+                {...register('gender', { required: 'Required' })}>
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              {errors.gender && <p className="field-err-msg">{errors.gender.message}</p>}
+            </div>
+
+            {/* Password */}
+            <div className="field-group">
+              <label className="field-label">Password</label>
+              <div className="field-wrap">
+                <Lock className="field-icon" />
+                <input type={showPassword ? 'text' : 'password'} placeholder="Create a strong password" className={`field-input field-input-pr ${errors.password ? 'field-error-border' : ''}`}
+                  {...register('password', { required: 'Required', minLength: { value: 6, message: 'Min 6 characters' } })} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="eye-btn">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="field-err-msg">{errors.password.message}</p>}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="field-group">
+              <label className="field-label">Confirm Password</label>
+              <div className="field-wrap">
+                <Lock className="field-icon" />
+                <input type={showPassword ? 'text' : 'password'} placeholder="Confirm your password" className={`field-input field-input-pr ${errors.confirm_password ? 'field-error-border' : ''}`}
+                  {...register('confirm_password', { required: 'Required', validate: v => v === password || 'Passwords do not match' })} />
+              </div>
+              {errors.confirm_password && <p className="field-err-msg">{errors.confirm_password.message}</p>}
+            </div>
+
+            {error && <div className="auth-error">⚠️ {error}</div>}
+
+            <button type="submit" disabled={loading} className="submit-btn">
+              {loading ? <><span className="btn-spinner" />Creating account...</> : 'Create Account'}
+            </button>
+          </form>
+
+          {/* Benefits */}
+          <div className="benefits">
+            {['Order from your favorite stores', 'Track your orders in real-time', 'Exclusive offers and discounts'].map((b) => (
+              <div key={b} className="benefit-row">
+                <span className="benefit-check"><Check className="w-3 h-3" /></span>
+                <span>{b}</span>
+              </div>
+            ))}
           </div>
 
-          {/* Footer Info */}
-          <div className="mt-8 text-center">
-            <p className="text-white/60 text-xs">
-              By creating an account, you agree to our{' '}
-              <Link href="/terms" className="underline hover:text-white">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/privacy" className="underline hover:text-white">
-                Privacy Policy
-              </Link>
-            </p>
-          </div>
-        </main>
+          <div className="divider"><span>Already have an account?</span></div>
+          <Link href="/login" className="sign-in-btn">Sign In</Link>
+        </div>
+
+        <p className="auth-terms">By creating an account you agree to our <Link href="/terms" className="terms-link">Terms</Link> and <Link href="/privacy" className="terms-link">Privacy Policy</Link></p>
       </div>
     </div>
   );
 }
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=DM+Sans:wght@400;500&display=swap');
+  :root{--primary:#0A1628;--accent:#3D6FFF;--accent2:#FF5C3A;--green:#1DB87A;--muted:#8B8FA8;--border:#ECEDF2;--bg:#F7F6F2;font-family:'DM Sans',sans-serif}
+  .auth-root{min-height:100vh;background:var(--primary);position:relative;overflow:hidden;display:flex;flex-direction:column}
+  .bg-blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.12;pointer-events:none}
+  .bg-blob-1{width:400px;height:400px;background:#3D6FFF;top:-100px;right:-100px}
+  .bg-blob-2{width:350px;height:350px;background:#FF5C3A;bottom:-80px;left:-80px}
+  .auth-scroll{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:52px 20px 40px;min-height:100vh}
+  .auth-logo-wrap{align-self:flex-start;margin-bottom:32px}
+  .auth-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .logo-box{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center}
+  .logo-icon{color:var(--accent)}
+  .logo-text{font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:#fff}
+  .auth-headline{align-self:flex-start;margin-bottom:24px}
+  .auth-title{font-family:'Sora',sans-serif;font-size:32px;font-weight:800;color:#fff;margin-bottom:6px}
+  .auth-sub{font-size:15px;color:rgba(255,255,255,.5)}
+  .auth-card{width:100%;max-width:420px;background:#fff;border-radius:28px;padding:28px 24px;box-shadow:0 32px 80px rgba(0,0,0,.45)}
+  .auth-form{display:flex;flex-direction:column;gap:16px}
+  .name-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field-group{display:flex;flex-direction:column;gap:5px}
+  .field-label{font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .field-wrap{position:relative}
+  .field-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted)}
+  .field-input{width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--border);border-radius:13px;background:var(--bg);font-size:13px;color:var(--primary);outline:none;font-family:'DM Sans',sans-serif;transition:border-color .15s}
+  .field-input-npl{padding-left:14px}
+  .field-input-pr{padding-right:42px}
+  .field-select{padding-left:14px;cursor:pointer;appearance:none}
+  .field-input:focus{border-color:var(--accent);background:#fff}
+  .field-input::placeholder{color:var(--muted)}
+  .field-error-border{border-color:var(--accent2)!important}
+  .field-err-msg{font-size:11px;color:var(--accent2);font-weight:500}
+  .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);transition:color .15s;cursor:pointer}
+  .eye-btn:hover{color:var(--primary)}
+  .auth-error{padding:12px 16px;background:rgba(255,92,58,.08);border:1px solid rgba(255,92,58,.2);border-radius:13px;font-size:13px;color:var(--accent2)}
+  .submit-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:15px;background:var(--primary);color:#fff;border-radius:16px;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;box-shadow:0 8px 28px rgba(10,22,40,.3);transition:all .2s;cursor:pointer;margin-top:4px;width:100%}
+  .submit-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 14px 36px rgba(10,22,40,.45)}
+  .submit-btn:active{transform:scale(.97)}
+  .submit-btn:disabled{opacity:.55}
+  .btn-spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .benefits{display:flex;flex-direction:column;gap:8px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+  .benefit-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+  .benefit-check{width:20px;height:20px;border-radius:6px;background:rgba(29,184,122,.12);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .divider{display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--muted);font-size:12px}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+  .sign-in-btn{display:block;text-align:center;padding:13px;border:1.5px solid var(--border);border-radius:16px;font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:var(--primary);text-decoration:none;transition:all .15s;background:var(--bg)}
+  .sign-in-btn:hover{border-color:var(--accent);background:rgba(61,111,255,.04);color:var(--accent)}
+  .auth-terms{margin-top:24px;text-align:center;font-size:11px;color:rgba(255,255,255,.3);max-width:320px}
+  .terms-link{color:rgba(255,255,255,.5);text-decoration:underline}
+`;
