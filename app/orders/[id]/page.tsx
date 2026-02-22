@@ -54,7 +54,8 @@ export default function OrderDetailsPage() {
   };
 
   const getStatusMeta = (status: string) => {
-    switch (status.toLowerCase()) {
+    const normalizedStatus = status?.toLowerCase() || '';
+    switch (normalizedStatus) {
       case 'pending':             return { color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', icon: <Clock className="w-5 h-5" />, label: 'Pending' };
       case 'accepted':
       case 'confirmed':           return { color: '#1DB87A', bg: 'rgba(29,184,122,0.12)', icon: <CheckCircle className="w-5 h-5" />, label: 'Confirmed' };
@@ -67,7 +68,7 @@ export default function OrderDetailsPage() {
     }
   };
 
-  const canCancel = order && ['pending', 'accepted', 'confirmed'].includes(order.order_status.toLowerCase());
+  const canCancel = order && order.order_status && ['pending', 'accepted', 'confirmed'].includes(order.order_status.toLowerCase());
 
   if (!user) { router.push('/login'); return null; }
 
@@ -217,7 +218,7 @@ export default function OrderDetailsPage() {
         )}
 
         {/* ── Already cancelled ── */}
-        {order.order_status.toLowerCase() === 'cancelled' && (
+        {order.order_status && order.order_status.toLowerCase() === 'cancelled' && (
           <div className="cancelled-banner">
             <XCircle className="w-5 h-5" />
             <div>

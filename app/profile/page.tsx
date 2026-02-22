@@ -4,13 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import { useAuthStore } from '@/store/authStore';
 import { useLanguageStore } from '@/store/languageStore';
 import { useTranslation } from '@/hooks/useTranslation';
-import { User, MapPin, Bell, CreditCard, HelpCircle, LogOut, Settings, Globe, Shield, FileText, ShoppingBag } from 'lucide-react';
+import { User, MapPin, Bell, CreditCard, HelpCircle, LogOut, Settings, Globe, Shield, FileText, ShoppingBag, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { API_CONFIG } from '@/config';
 
@@ -53,25 +50,22 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-screenback pb-20">
+      <div className="page-root pb-24">
+        <style>{css}</style>
         <Header title="Profile" />
-        
-        <main className="max-w-md mx-auto px-4 py-8">
-          <Card className="mt-8 text-center py-12">
-            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="w-12 h-12 text-primary" />
+
+        <main className="w-full">
+          <div className="empty-full">
+            <div className="profile-avatar-large">
+              <User className="w-12 h-12" />
             </div>
-            <h2 className="text-xl font-bold text-primary mb-2">Welcome to Kafek</h2>
-            <p className="text-greyunselect mb-6">Login to access your profile</p>
-            <div className="space-x-3">
-              <Link href="/login">
-                <Button variant="outline">Login</Button>
-              </Link>
-              <Link href="/signup">
-                <Button>Sign Up</Button>
-              </Link>
+            <h2 className="empty-title">Welcome to Kafek</h2>
+            <p className="empty-sub">Login to access your profile</p>
+            <div className="auth-buttons">
+              <Link href="/login" className="pill-btn-outline">Login</Link>
+              <Link href="/signup" className="pill-btn">Sign Up</Link>
             </div>
-          </Card>
+          </div>
         </main>
 
         <BottomNavigation />
@@ -80,142 +74,197 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-screenback pb-20">
+    <div className="page-root pb-24">
+      <style>{css}</style>
       <Header title={language === 'ar' ? 'الملف الشخصي' : language === 'ur' ? 'پروفائل' : 'Profile'} />
 
-      <main className="max-w-screen-xl mx-auto">
+      <main className="w-full">
         {/* Profile Header */}
-        <div className="bg-primary text-white px-4 py-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+        <section className="profile-header">
+          <div className="profile-header-content">
+            <div className="profile-avatar">
               {user.image ? (
                 <img
                   src={`${API_CONFIG.IMAGE_BASE_URL}${user.image}`}
                   alt={user.first_name}
-                  className="w-full h-full rounded-full object-cover"
+                  className="avatar-img"
                 />
               ) : (
                 <User className="w-10 h-10" />
               )}
             </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold">
+            <div className="profile-info">
+              <h2 className="profile-name">
                 {user.first_name} {user.last_name}
               </h2>
-              <p className="text-white/80 text-sm">{user.email}</p>
-              <p className="text-white/80 text-sm">{user.mobile_with_code}</p>
+              <p className="profile-email">{user.email}</p>
+              <p className="profile-phone">{user.mobile_with_code}</p>
             </div>
-            <button
-              onClick={() => setEditing(!editing)}
-              className="p-2 bg-white/20 rounded-lg hover:bg-white/30"
-            >
+            <button onClick={() => setEditing(!editing)} className="edit-btn">
               <Settings className="w-5 h-5" />
             </button>
           </div>
-        </div>
+        </section>
 
         {/* Wallet Balance */}
-        <Card className="mx-4 mt-4 bg-gradient-to-r from-button to-green-600 text-white">
-          <div className="flex items-center justify-between">
+        <section className="px-4 mt-4">
+          <div className="wallet-card">
             <div>
-              <p className="text-sm opacity-90">Wallet Balance</p>
-              <p className="text-3xl font-bold mt-1">{user.wallet || '0.00'} SAR</p>
+              <p className="wallet-label">Wallet Balance</p>
+              <p className="wallet-amount">{user.wallet || '0.00'} SAR</p>
             </div>
-            <CreditCard className="w-12 h-12 opacity-50" />
+            <CreditCard className="w-12 h-12 wallet-icon" />
           </div>
-        </Card>
+        </section>
 
         {/* Menu Items */}
-        <div className="mx-4 mt-4 space-y-2">
-          {menuItems.filter(item => item.show !== false).map((item, index) => {
-            const Icon = item.icon;
-            const Content = (
-              <Card className="flex items-center justify-between py-3 px-4 hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-center space-x-3">
-                  <Icon className="w-5 h-5 text-primary" />
-                  <span className="font-medium text-primary">{item.label}</span>
+        <section className="px-4 mt-4">
+          <div className="menu-list">
+            {menuItems.filter(item => item.show !== false).map((item, index) => {
+              const Icon = item.icon;
+              const Content = (
+                <div className="menu-item">
+                  <div className="menu-left">
+                    <div className="menu-icon">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="menu-label">{item.label}</span>
+                  </div>
+                  <div className="menu-right">
+                    {item.badge && (
+                      <span className="menu-badge">{item.badge} SAR</span>
+                    )}
+                    <ChevronRight className="w-5 h-5" />
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {item.badge && (
-                    <span className="text-sm text-greyunselect">{item.badge} SAR</span>
-                  )}
-                  <svg className="w-5 h-5 text-greyunselect" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </Card>
-            );
-
-            // If item has an action, use button instead of Link
-            if (item.action) {
-              return (
-                <button key={index} onClick={item.action} className="w-full">
-                  {Content}
-                </button>
               );
-            }
 
-            return (
-              <Link key={index} href={item.href} className="block">
-                {Content}
-              </Link>
-            );
-          })}
-        </div>
+              if (item.action) {
+                return (
+                  <button key={index} onClick={item.action} className="w-full">
+                    {Content}
+                  </button>
+                );
+              }
+
+              return (
+                <Link key={index} href={item.href} className="block">
+                  {Content}
+                </Link>
+              );
+            })}
+          </div>
+        </section>
 
         {/* Language Selection */}
-        <Card className="mx-4 mt-4">
-          <h3 className="font-bold text-primary mb-3 flex items-center">
-            <Globe className="w-5 h-5 mr-2" />
-            {language === 'ar' ? 'اللغة / Language' : language === 'ur' ? 'زبان / Language' : 'Language / اللغة'}
-          </h3>
-          <div className="flex space-x-2">
-            {languages.map((lang) => (
-              <button
-                key={lang.code}
-                onClick={() => setLanguage(lang.code)}
-                className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-                  language === lang.code
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-greyunselect hover:bg-gray-200'
-                }`}
-              >
-                {lang.label}
-              </button>
-            ))}
+        <section className="px-4 mt-4">
+          <div className="section-card">
+            <h3 className="section-label-title">
+              <Globe className="w-5 h-5" />
+              {language === 'ar' ? 'اللغة / Language' : language === 'ur' ? 'زبان / Language' : 'Language / اللغة'}
+            </h3>
+            <div className="lang-strip">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  className={`lang-btn ${language === lang.code ? 'lang-active' : ''}`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+            {language === 'ar' && (
+              <p className="lang-success text-right" dir="rtl">
+                تم تغيير اللغة بنجاح!
+              </p>
+            )}
+            {language === 'ur' && (
+              <p className="lang-success text-right" dir="rtl">
+                زبان کامیابی سے تبدیل ہو گئی!
+              </p>
+            )}
+            {language === 'en' && (
+              <p className="lang-success">
+                Language changed successfully!
+              </p>
+            )}
           </div>
-          {language === 'ar' && (
-            <p className="text-xs text-greyunselect mt-2 text-right" dir="rtl">
-              تم تغيير اللغة بنجاح!
-            </p>
-          )}
-          {language === 'ur' && (
-            <p className="text-xs text-greyunselect mt-2 text-right" dir="rtl">
-              زبان کامیابی سے تبدیل ہو گئی!
-            </p>
-          )}
-          {language === 'en' && (
-            <p className="text-xs text-greyunselect mt-2">
-              Language changed successfully!
-            </p>
-          )}
-        </Card>
+        </section>
 
         {/* Logout Button */}
-        <div className="mx-4 mt-6 mb-8">
-          <Button
-            variant="outline"
-            fullWidth
-            onClick={handleLogout}
-            className="border-red-500 text-red-500 hover:bg-red-50"
-          >
-            <LogOut className="w-5 h-5 mr-2" />
-            Logout
-          </Button>
-        </div>
+        <section className="px-4 mt-6 mb-8">
+          <button onClick={handleLogout} className="logout-btn">
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
+          </button>
+        </section>
       </main>
 
       <BottomNavigation />
     </div>
   );
 }
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --bg: #F7F6F2; --surface: #FFFFFF; --primary: #0A1628;
+    --accent: #3D6FFF; --accent2: #FF5C3A; --green: #1DB87A;
+    --muted: #8B8FA8; --border: #ECEDF2; --radius: 20px; --radius-sm: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .page-root { min-height: 100vh; background: var(--bg); }
+
+  /* Empty State */
+  .empty-full{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:24px}
+  .profile-avatar-large{width:96px;height:96px;border-radius:50%;background:rgba(10,22,40,.06);display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:var(--primary)}
+  .empty-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:var(--primary);margin-bottom:6px}
+  .empty-sub{font-size:13px;color:var(--muted)}
+  .auth-buttons{display:flex;gap:10px;margin-top:24px}
+  .pill-btn{padding:12px 28px;background:var(--primary);color:#fff;border-radius:100px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;text-decoration:none}
+  .pill-btn-outline{padding:12px 28px;background:transparent;color:var(--primary);border:2px solid var(--primary);border-radius:100px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;text-decoration:none}
+
+  /* Profile Header */
+  .profile-header { background: var(--primary); padding: 24px 20px; }
+  .profile-header-content { display: flex; align-items: center; gap: 16px; }
+  .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; overflow: hidden; }
+  .avatar-img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-info { flex: 1; }
+  .profile-name { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .profile-email { font-size: 13px; color: rgba(255,255,255,.75); margin-bottom: 2px; }
+  .profile-phone { font-size: 13px; color: rgba(255,255,255,.75); }
+  .edit-btn { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.15); color: #fff; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all .2s; flex-shrink: 0; }
+  .edit-btn:hover { background: rgba(255,255,255,.25); }
+
+  /* Wallet Card */
+  .wallet-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: linear-gradient(135deg, var(--green) 0%, #0A8A58 100%); border-radius: var(--radius); color: #fff; box-shadow: 0 8px 24px rgba(29,184,122,.25); }
+  .wallet-label { font-size: 13px; opacity: .9; margin-bottom: 6px; font-family: 'DM Sans', sans-serif; }
+  .wallet-amount { font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 800; }
+  .wallet-icon { opacity: .3; }
+
+  /* Menu List */
+  .menu-list { display: flex; flex-direction: column; gap: 8px; }
+  .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; background: var(--surface); border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,.05); cursor: pointer; transition: all .2s; border: none; width: 100%; text-align: left; }
+  .menu-item:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-1px); }
+  .menu-left { display: flex; align-items: center; gap: 12px; }
+  .menu-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(10,22,40,.06); display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0; }
+  .menu-label { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--primary); }
+  .menu-right { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+  .menu-badge { font-size: 12px; font-weight: 600; color: var(--muted); }
+
+  /* Section Card */
+  .section-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .section-label-title { display: flex; align-items: center; gap: 8px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
+
+  /* Language Strip */
+  .lang-strip { display: flex; gap: 8px; }
+  .lang-btn { flex: 1; padding: 12px 16px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
+  .lang-btn:hover { border-color: rgba(61,111,255,.4); }
+  .lang-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .lang-success { font-size: 12px; color: var(--green); margin-top: 10px; font-weight: 500; }
+
+  /* Logout Button */
+  .logout-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: rgba(255,92,58,.08); border: 1.5px solid rgba(255,92,58,.2); border-radius: var(--radius); color: var(--accent2); font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; }
+  .logout-btn:hover { background: rgba(255,92,58,.15); }
+`;

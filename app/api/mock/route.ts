@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// In-memory storage for mock orders (persists during server runtime)
+let mockOrders: any[] = [];
+
 // Mock data for testing when backend is down
 const mockProducts = {
   status: 'success',
@@ -162,13 +165,85 @@ export async function GET(request: NextRequest) {
       });
     
     case 'get_cart':
-    case 'get_user_order_by_status':
     case 'get_notification_list':
     case 'get_profile':
       return NextResponse.json({
         status: 'success',
         message: 'Mock data retrieved',
         result: [],
+      });
+
+    case 'place_order':
+      // Mock placing an order - generate a random order ID
+      const orderId = 'ORD-' + Math.floor(Math.random() * 100000);
+      const userId = searchParams.get('user_id') || '1';
+      const providerId = searchParams.get('provider_id') || '1';
+      const totalAmount = searchParams.get('total_amount') || '0';
+      const paymentMethod = searchParams.get('payment_method') || 'cash';
+      const orderType = searchParams.get('order_type') || 'delivery';
+      const lat = searchParams.get('lat') || '24.7136';
+      const lon = searchParams.get('lon') || '46.6753';
+      
+      const mockOrder = {
+        id: Date.now().toString(),
+        user_id: userId,
+        provider_id: providerId,
+        total_amount: totalAmount,
+        delivery_fee: searchParams.get('delivery_fee') || '10',
+        payment_method: paymentMethod,
+        order_type: orderType,
+        order_status: 'pending',
+        order_date: new Date().toISOString(),
+        delivery_address: 'Mock Address, Riyadh',
+        lat: lat,
+        lon: lon,
+        store_name: 'Test Restaurant',
+        provider_logo: 'logo.jpg',
+        // Extended details for order details page
+        order_details: [{
+          id: '1',
+          item_name: 'Mock Product',
+          item_price: totalAmount,
+          item_quantity: '1',
+          total_price: totalAmount,
+        }],
+        driver_details: null,
+        payment_transactions: [],
+      };
+
+      // Store the order in memory
+      mockOrders.push(mockOrder);
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Order placed successfully',
+        result: mockOrder,
+      });
+
+    case 'get_user_order_by_status':
+      // Return orders based on user_id and type (Current/Past)
+      const orderUserId = searchParams.get('user_id') || '1';
+      const orderTypeFilter = searchParams.get('type') || 'Current';
+      
+      const userOrders = mockOrders.filter(o => o.user_id === orderUserId);
+      const filteredOrders = orderTypeFilter === 'Current' 
+        ? userOrders.filter(o => ['pending', 'accepted', 'preparing', 'on_way'].includes(o.order_status))
+        : userOrders.filter(o => ['completed', 'delivered', 'cancelled', 'rejected'].includes(o.order_status));
+      
+      // Format orders for the orders list page (include both status and order_status for compatibility)
+      const formattedOrders = filteredOrders.map(o => ({
+        ...o,
+        order_id: o.id,
+        date: new Date(o.order_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+        time: new Date(o.order_date).toTimeString().split(' ')[0].slice(0, 5),
+        status: o.order_status,  // Alias for orders page
+        address: o.delivery_address,
+      }));
+      
+      return NextResponse.json({
+        status: 'success',
+        message: 'Orders retrieved successfully',
+        result: formattedOrders,
       });
     
     default:

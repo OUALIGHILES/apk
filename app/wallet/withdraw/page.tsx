@@ -3,12 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import { useAuthStore } from '@/store/authStore';
 import { walletAPI } from '@/lib/api/extended';
-import { Wallet, DollarSign, Building, CreditCard, Info } from 'lucide-react';
+import { Wallet, DollarSign, Building, CreditCard, Info, AlertCircle, ChevronLeft } from 'lucide-react';
 
 export default function WithdrawPage() {
   const router = useRouter();
@@ -99,128 +96,244 @@ export default function WithdrawPage() {
   }
 
   return (
-    <div className="min-h-screen bg-screenback">
+    <div className="page-root pb-24">
+      <style>{css}</style>
       <Header title="Withdraw Funds" />
 
-      <main className="max-w-screen-xl mx-auto px-4 py-4">
+      <main className="w-full">
         {/* Balance Card */}
-        <Card className="mb-4 bg-gradient-to-br from-green-500 to-green-600 text-white">
-          <div className="flex items-center justify-between">
+        <section className="px-4 mt-4">
+          <div className="balance-card">
             <div>
-              <p className="text-sm text-white/80 mb-1">Available Balance</p>
-              <h2 className="text-3xl font-bold">{balance} SAR</h2>
+              <p className="balance-label">Available Balance</p>
+              <h2 className="balance-amount">{balance} SAR</h2>
             </div>
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-              <Wallet className="w-8 h-8 text-white" />
+            <div className="balance-icon-wrap">
+              <Wallet className="w-8 h-8" />
             </div>
           </div>
-        </Card>
+        </section>
 
         {/* Info Card */}
-        <Card className="mb-4 bg-yellow-50 border-yellow-200">
-          <div className="flex items-start space-x-3">
-            <Info className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-bold text-yellow-800 mb-1">Withdrawal Information</h4>
-              <ul className="text-sm text-yellow-700 space-y-1">
-                <li>• Minimum withdrawal: 50 SAR</li>
-                <li>• Processing time: 1-3 business days</li>
-                <li>• Funds will be transferred to your bank account</li>
+        <section className="px-4 mt-4">
+          <div className="info-card info-warning">
+            <div className="info-icon-warning">
+              <Info className="w-5 h-5" />
+            </div>
+            <div className="info-body">
+              <h4 className="info-title">Withdrawal Information</h4>
+              <ul className="info-list">
+                <li>Minimum withdrawal: 50 SAR</li>
+                <li>Processing time: 1-3 business days</li>
+                <li>Funds will be transferred to your bank account</li>
               </ul>
             </div>
           </div>
-        </Card>
+        </section>
 
         {/* Withdrawal Form */}
-        <Card className="mb-4">
-          <h3 className="font-bold text-primary mb-4">Bank Account Details</h3>
+        <section className="px-4 mt-4">
+          <div className="section-card">
+            <h3 className="section-label-title">Bank Account Details</h3>
 
-          <div className="space-y-4">
-            <Input
-              label="Withdrawal Amount *"
-              type="number"
-              placeholder="Enter amount"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              icon={<DollarSign className="w-5 h-5" />}
-              error={errors.amount}
-            />
+            <div className="form-fields">
+              <div className="form-field">
+                <label className="field-label">Withdrawal Amount *</label>
+                <div className="field-wrap">
+                  <DollarSign className="field-icon" />
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    className={`field-input ${errors.amount ? 'field-error' : ''}`}
+                  />
+                </div>
+                {errors.amount && (
+                  <p className="field-error-text">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.amount}
+                  </p>
+                )}
+              </div>
 
-            <Input
-              label="Bank Name *"
-              placeholder="e.g., Al Rajhi Bank"
-              value={formData.bank_name}
-              onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-              icon={<Building className="w-5 h-5" />}
-              error={errors.bank_name}
-            />
+              <div className="form-field">
+                <label className="field-label">Bank Name *</label>
+                <div className="field-wrap">
+                  <Building className="field-icon" />
+                  <input
+                    type="text"
+                    placeholder="e.g., Al Rajhi Bank"
+                    value={formData.bank_name}
+                    onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                    className={`field-input ${errors.bank_name ? 'field-error' : ''}`}
+                  />
+                </div>
+                {errors.bank_name && (
+                  <p className="field-error-text">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.bank_name}
+                  </p>
+                )}
+              </div>
 
-            <Input
-              label="Account Number *"
-              placeholder="Enter account number"
-              value={formData.account_no}
-              onChange={(e) => setFormData({ ...formData, account_no: e.target.value })}
-              icon={<CreditCard className="w-5 h-5" />}
-              error={errors.account_no}
-            />
+              <div className="form-field">
+                <label className="field-label">Account Number *</label>
+                <div className="field-wrap">
+                  <CreditCard className="field-icon" />
+                  <input
+                    type="text"
+                    placeholder="Enter account number"
+                    value={formData.account_no}
+                    onChange={(e) => setFormData({ ...formData, account_no: e.target.value })}
+                    className={`field-input ${errors.account_no ? 'field-error' : ''}`}
+                  />
+                </div>
+                {errors.account_no && (
+                  <p className="field-error-text">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.account_no}
+                  </p>
+                )}
+              </div>
 
-            <Input
-              label="Account Title *"
-              placeholder="Name on account"
-              value={formData.account_title}
-              onChange={(e) => setFormData({ ...formData, account_title: e.target.value })}
-              icon={<Building className="w-5 h-5" />}
-              error={errors.account_title}
-            />
+              <div className="form-field">
+                <label className="field-label">Account Title *</label>
+                <div className="field-wrap">
+                  <Building className="field-icon" />
+                  <input
+                    type="text"
+                    placeholder="Name on account"
+                    value={formData.account_title}
+                    onChange={(e) => setFormData({ ...formData, account_title: e.target.value })}
+                    className={`field-input ${errors.account_title ? 'field-error' : ''}`}
+                  />
+                </div>
+                {errors.account_title && (
+                  <p className="field-error-text">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.account_title}
+                  </p>
+                )}
+              </div>
 
-            <Input
-              label="IBAN (Optional)"
-              placeholder="SA00 0000 0000 0000 0000 0000"
-              value={formData.iban}
-              onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
-              icon={<CreditCard className="w-5 h-5" />}
-            />
+              <div className="form-field">
+                <label className="field-label">IBAN (Optional)</label>
+                <div className="field-wrap">
+                  <CreditCard className="field-icon" />
+                  <input
+                    type="text"
+                    placeholder="SA00 0000 0000 0000 0000 0000"
+                    value={formData.iban}
+                    onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
+                    className="field-input"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        </Card>
+        </section>
 
         {/* Summary */}
-        <Card className="mb-4">
-          <h3 className="font-bold text-primary mb-3">Withdrawal Summary</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-greyunselect">Amount</span>
-              <span className="font-medium">{formData.amount || '0.00'} SAR</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-greyunselect">Processing Fee</span>
-              <span className="font-medium text-green-600">FREE</span>
-            </div>
-            <div className="border-t pt-2 flex justify-between">
-              <span className="font-bold text-primary">You'll Receive</span>
-              <span className="font-bold text-button">{formData.amount || '0.00'} SAR</span>
+        <section className="px-4 mt-4">
+          <div className="section-card">
+            <h3 className="section-label-title">Withdrawal Summary</h3>
+            <div className="summary-list">
+              <div className="summary-row">
+                <span className="summary-label">Amount</span>
+                <span className="summary-value">{formData.amount || '0.00'} SAR</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-label">Processing Fee</span>
+                <span className="summary-value-free">FREE</span>
+              </div>
+              <div className="summary-divider" />
+              <div className="summary-row summary-total">
+                <span className="summary-label-total">You'll Receive</span>
+                <span className="summary-value-total">{formData.amount || '0.00'} SAR</span>
+              </div>
             </div>
           </div>
-        </Card>
+        </section>
 
         {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button
-            onClick={handleWithdraw}
-            loading={loading}
-            className="w-full"
-            disabled={!formData.amount || parseFloat(formData.amount) <= 0}
-          >
-            Submit Withdrawal Request
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/wallet')}
-            className="w-full"
-          >
-            Cancel
-          </Button>
-        </div>
+        <section className="px-4 mt-4">
+          <button onClick={handleWithdraw} disabled={loading || !formData.amount || parseFloat(formData.amount) <= 0} className="save-btn">
+            {loading ? (
+              <><div className="loader-sm" />Processing...</>
+            ) : (
+              <>Submit Withdrawal Request</>
+            )}
+          </button>
+          <button onClick={() => router.push('/wallet')} className="cancel-btn">
+            <ChevronLeft className="w-5 h-5" />Cancel
+          </button>
+        </section>
       </main>
     </div>
   );
 }
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --bg: #F7F6F2; --surface: #FFFFFF; --primary: #0A1628;
+    --accent: #3D6FFF; --accent2: #FF5C3A; --green: #1DB87A;
+    --muted: #8B8FA8; --border: #ECEDF2; --radius: 20px; --radius-sm: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .page-root { min-height: 100vh; background: var(--bg); }
+  .loader-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Balance Card */
+  .balance-card { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: linear-gradient(135deg, var(--green) 0%, #0A8A58 100%); border-radius: var(--radius); color: #fff; box-shadow: 0 8px 24px rgba(29,184,122,.25); }
+  .balance-label { font-size: 13px; opacity: .9; margin-bottom: 6px; font-family: 'DM Sans', sans-serif; }
+  .balance-amount { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; }
+  .balance-icon-wrap { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+
+  /* Info Card */
+  .info-card { display: flex; gap: 14px; padding: 18px; background: rgba(61,111,255,.08); border: 1.5px solid rgba(61,111,255,.2); border-radius: var(--radius); }
+  .info-warning { background: rgba(234,179,8,.08); border-color: rgba(234,179,8,.2); }
+  .info-icon-warning { width: 44px; height: 44px; border-radius: 12px; background: rgba(234,179,8,.15); display: flex; align-items: center; justify-content: center; color: #a16207; flex-shrink: 0; }
+  .info-body { flex: 1; }
+  .info-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+  .info-list { list-style: none; padding: 0; margin: 0; }
+  .info-list li { font-size: 12px; color: var(--muted); margin-bottom: 4px; padding-left: 12px; position: relative; }
+  .info-list li::before { content: '•'; position: absolute; left: 0; color: var(--accent); font-weight: bold; }
+
+  /* Section Card */
+  .section-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .section-label-title { display: flex; align-items: center; gap: 8px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+
+  /* Form Fields */
+  .form-fields { display: flex; flex-direction: column; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 8px; }
+  .field-label { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .field-wrap { position: relative; }
+  .field-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
+  .field-input { width: 100%; padding: 12px 14px 12px 44px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; color: var(--primary); font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--muted); }
+  .field-error { border-color: var(--accent2) !important; }
+  .field-error-text { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--accent2); margin-top: 6px; font-weight: 500; }
+
+  /* Summary List */
+  .summary-list { display: flex; flex-direction: column; gap: 10px; }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; }
+  .summary-label { font-size: 13px; color: var(--muted); }
+  .summary-value { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--primary); }
+  .summary-value-free { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--green); }
+  .summary-divider { height: 1px; background: var(--border); margin: 4px 0; }
+  .summary-total { padding-top: 12px; }
+  .summary-label-total { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); }
+  .summary-value-total { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 800; color: var(--primary); }
+
+  /* Action Buttons */
+  .save-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius); font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; box-shadow: 0 8px 28px rgba(10,22,40,.25); }
+  .save-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 36px rgba(10,22,40,.35); }
+  .save-btn:active { transform: scale(.98); }
+  .save-btn:disabled { opacity: .6; cursor: not-allowed; }
+  .cancel-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 14px; background: var(--surface); color: var(--muted); border: 1.5px solid var(--border); border-radius: var(--radius); font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 10px; }
+  .cancel-btn:hover { background: var(--bg); }
+`;

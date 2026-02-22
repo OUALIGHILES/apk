@@ -4,11 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import { staticPagesAPI } from '@/lib/api/extended';
-import { HelpCircle, MessageCircle, Mail, Phone, Send } from 'lucide-react';
+import { HelpCircle, MessageCircle, Mail, Phone, Send, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function SupportPage() {
   const router = useRouter();
@@ -66,184 +63,189 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-screenback pb-20">
+    <div className="page-root pb-24">
+      <style>{css}</style>
       <Header title="Help & Support" />
 
-      <main className="max-w-screen-xl mx-auto px-4 py-4">
+      <main className="w-full">
         {/* Tab Switcher */}
-        <div className="flex space-x-2 mb-4">
-          <button
-            onClick={() => setActiveTab('faq')}
-            className={`flex-1 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'faq'
-                ? 'bg-primary text-white'
-                : 'bg-white text-greyunselect hover:bg-gray-100'
-            }`}
-          >
-            <HelpCircle className="w-5 h-5 mx-auto mb-1" />
-            FAQ
-          </button>
-          <button
-            onClick={() => setActiveTab('contact')}
-            className={`flex-1 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'contact'
-                ? 'bg-primary text-white'
-                : 'bg-white text-greyunselect hover:bg-gray-100'
-            }`}
-          >
-            <MessageCircle className="w-5 h-5 mx-auto mb-1" />
-            Contact Us
-          </button>
-        </div>
+        <section className="mt-4 px-4">
+          <div className="tab-strip">
+            <button
+              onClick={() => setActiveTab('faq')}
+              className={`tab-btn ${activeTab === 'faq' ? 'tab-active' : ''}`}
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span>FAQ</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('contact')}
+              className={`tab-btn ${activeTab === 'contact' ? 'tab-active' : ''}`}
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Contact Us</span>
+            </button>
+          </div>
+        </section>
 
         {/* FAQ Section */}
         {activeTab === 'faq' && (
-          <>
+          <section className="px-4 mt-6 mb-6">
             {loading ? (
-              <Card className="text-center py-12">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-                <p className="text-greyunselect mt-2">Loading FAQ...</p>
-              </Card>
+              <div className="loading-state">
+                <div className="loader" />
+                <p className="loading-text">Loading FAQ...</p>
+              </div>
             ) : faqs.length === 0 ? (
-              <Card className="text-center py-12">
-                <HelpCircle className="w-16 h-16 mx-auto text-greyunselect/30 mb-4" />
-                <h3 className="text-xl font-bold text-primary mb-2">No FAQs Available</h3>
-                <p className="text-greyunselect mb-4">Check back soon for frequently asked questions</p>
-                <Button onClick={() => setActiveTab('contact')}>Contact Support</Button>
-              </Card>
+              <div className="empty-full">
+                <div className="empty-icon-wrap">
+                  <HelpCircle className="w-10 h-10 empty-icon" />
+                </div>
+                <p className="empty-title">No FAQs Available</p>
+                <p className="empty-sub">Check back soon for frequently asked questions</p>
+                <button onClick={() => setActiveTab('contact')} className="pill-btn mt-6">Contact Support</button>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="faq-list">
                 {faqs.map((faq) => (
-                  <Card key={faq.id} className="overflow-hidden">
+                  <div key={faq.id} className="faq-item">
                     <button
                       onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+                      className="faq-question"
                     >
-                      <span className="font-medium text-primary pr-4">{faq.question}</span>
-                      <span className={`transform transition-transform ${expandedFaq === faq.id ? 'rotate-180' : ''}`}>
-                        ▼
-                      </span>
+                      <span className="faq-question-text">{faq.question}</span>
+                      {expandedFaq === faq.id ? (
+                        <ChevronUp className="w-5 h-5 flex-shrink-0" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 flex-shrink-0" />
+                      )}
                     </button>
                     {expandedFaq === faq.id && (
-                      <div className="px-4 pb-4 pt-0 text-sm text-greyunselect border-t">
+                      <div className="faq-answer">
                         {faq.answer}
                       </div>
                     )}
-                  </Card>
+                  </div>
                 ))}
               </div>
             )}
-          </>
+          </section>
         )}
 
         {/* Contact Section */}
         {activeTab === 'contact' && (
           <>
             {/* Contact Options */}
-            <Card className="mb-4">
-              <h3 className="font-bold text-primary mb-3">Get in Touch</h3>
-              <div className="space-y-3">
-                <a
-                  href="tel:+966500000000"
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-primary">Call Us</p>
-                    <p className="text-sm text-greyunselect">+966 50 000 0000</p>
-                  </div>
-                </a>
-                <a
-                  href="mailto:support@kafek.com"
-                  className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-primary">Email Us</p>
-                    <p className="text-sm text-greyunselect">support@kafek.com</p>
-                  </div>
-                </a>
+            <section className="px-4 mt-6">
+              <div className="section-card">
+                <h3 className="section-label-title">Get in Touch</h3>
+                <div className="contact-options">
+                  <a href="tel:+966500000000" className="contact-option">
+                    <div className="contact-icon contact-icon-call">
+                      <Phone className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="contact-label">Call Us</p>
+                      <p className="contact-value">+966 50 000 0000</p>
+                    </div>
+                  </a>
+                  <a href="mailto:support@kafek.com" className="contact-option">
+                    <div className="contact-icon contact-icon-mail">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="contact-label">Email Us</p>
+                      <p className="contact-value">support@kafek.com</p>
+                    </div>
+                  </a>
+                </div>
               </div>
-            </Card>
+            </section>
 
             {/* Contact Form */}
-            <Card className="mb-4">
-              <h3 className="font-bold text-primary mb-4 flex items-center">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Send us a Message
-              </h3>
+            <section className="px-4 mt-4">
+              <div className="section-card">
+                <h3 className="section-label-title">
+                  <MessageCircle className="w-5 h-5" />
+                  Send us a Message
+                </h3>
 
-              <div className="space-y-4">
-                <Input
-                  label="Your Name *"
-                  placeholder="Enter your name"
-                  value={contactForm.name}
-                  onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                />
+                <div className="form-fields">
+                  <div className="form-field">
+                    <label className="field-label">Your Name *</label>
+                    <div className="field-wrap">
+                      <input
+                        type="text"
+                        placeholder="Enter your name"
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                        className="field-input"
+                      />
+                    </div>
+                  </div>
 
-                <Input
-                  label="Email Address *"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={contactForm.email}
-                  onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                />
+                  <div className="form-field">
+                    <label className="field-label">Email Address *</label>
+                    <div className="field-wrap">
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                        className="field-input"
+                      />
+                    </div>
+                  </div>
 
-                <Input
-                  label="Subject"
-                  placeholder="What is this about?"
-                  value={contactForm.subject}
-                  onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
-                />
+                  <div className="form-field">
+                    <label className="field-label">Subject</label>
+                    <div className="field-wrap">
+                      <input
+                        type="text"
+                        placeholder="What is this about?"
+                        value={contactForm.subject}
+                        onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                        className="field-input"
+                      />
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="text-sm font-medium text-primary mb-2 block">
-                    Message *
-                  </label>
-                  <textarea
-                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    rows={5}
-                    placeholder="How can we help you?"
-                    value={contactForm.message}
-                    onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                  />
+                  <div className="form-field">
+                    <label className="field-label">Message *</label>
+                    <textarea
+                      className="field-textarea"
+                      rows={5}
+                      placeholder="How can we help you?"
+                      value={contactForm.message}
+                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                    />
+                  </div>
+
+                  <button onClick={handleSendMessage} disabled={sending} className="save-btn">
+                    {sending ? (
+                      <><div className="loader-sm" />Sending...</>
+                    ) : (
+                      <><Send className="w-5 h-5" />Send Message</>
+                    )}
+                  </button>
                 </div>
-
-                <Button
-                  onClick={handleSendMessage}
-                  loading={sending}
-                  className="w-full flex items-center justify-center space-x-2"
-                >
-                  <Send className="w-5 h-5" />
-                  <span>Send Message</span>
-                </Button>
               </div>
-            </Card>
+            </section>
 
             {/* Business Hours */}
-            <Card className="bg-blue-50 border-blue-200">
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <HelpCircle className="w-5 h-5 text-blue-600" />
+            <section className="px-4 mt-4 mb-6">
+              <div className="info-card">
+                <div className="info-icon">
+                  <HelpCircle className="w-5 h-5" />
                 </div>
-                <div>
-                  <h4 className="font-bold text-blue-800 mb-1">Support Hours</h4>
-                  <p className="text-sm text-blue-700">
-                    Sunday - Thursday: 9:00 AM - 6:00 PM
-                  </p>
-                  <p className="text-sm text-blue-700">
-                    Friday - Saturday: Closed
-                  </p>
-                  <p className="text-xs text-blue-600 mt-2">
-                    Response time: Within 24 hours
-                  </p>
+                <div className="info-body">
+                  <h4 className="info-title">Support Hours</h4>
+                  <p className="info-text">Sunday - Thursday: 9:00 AM - 6:00 PM</p>
+                  <p className="info-text">Friday - Saturday: Closed</p>
+                  <p className="info-text-small">Response time: Within 24 hours</p>
                 </div>
               </div>
-            </Card>
+            </section>
           </>
         )}
       </main>
@@ -252,3 +254,83 @@ export default function SupportPage() {
     </div>
   );
 }
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --bg: #F7F6F2; --surface: #FFFFFF; --primary: #0A1628;
+    --accent: #3D6FFF; --accent2: #FF5C3A; --green: #1DB87A;
+    --muted: #8B8FA8; --border: #ECEDF2; --radius: 20px; --radius-sm: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .page-root { min-height: 100vh; background: var(--bg); }
+  .loader { width: 40px; height: 40px; border: 3px solid rgba(61,111,255,.15); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+  .loader-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty State */
+  .empty-full{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:24px}
+  .empty-icon-wrap{width:80px;height:80px;border-radius:24px;background:rgba(10,22,40,.06);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .empty-icon{color:var(--muted)}
+  .empty-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:var(--primary);margin-bottom:6px}
+  .empty-sub{font-size:13px;color:var(--muted)}
+  .pill-btn{padding:12px 28px;background:var(--primary);color:#fff;border-radius:100px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;border:none;cursor:pointer}
+
+  /* Loading State */
+  .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; }
+  .loading-text { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); margin-top: 16px; }
+
+  /* Tabs */
+  .tab-strip { display: flex; gap: 8px; background: var(--surface); padding: 6px; border-radius: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 16px; border-radius: 12px; background: transparent; border: none; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; }
+  .tab-btn:hover { background: rgba(10,22,40,.04); }
+  .tab-active { background: var(--primary); color: #fff; }
+
+  /* FAQ List */
+  .faq-list { display: flex; flex-direction: column; gap: 10px; }
+  .faq-item { background: var(--surface); border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,.05); overflow: hidden; }
+  .faq-question { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 16px 18px; background: none; border: none; cursor: pointer; transition: all .2s; text-align: left; }
+  .faq-question:hover { background: rgba(10,22,40,.03); }
+  .faq-question-text { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--primary); flex: 1; }
+  .faq-answer { padding: 0 18px 16px 18px; font-size: 13px; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); margin: 0 18px; padding-top: 12px; }
+
+  /* Section Card */
+  .section-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .section-label-title { display: flex; align-items: center; gap: 8px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+
+  /* Contact Options */
+  .contact-options { display: flex; flex-direction: column; gap: 10px; }
+  .contact-option { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--bg); border-radius: 12px; text-decoration: none; transition: all .2s; }
+  .contact-option:hover { background: rgba(10,22,40,.04); }
+  .contact-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .contact-icon-call { background: rgba(29,184,122,.1); color: var(--green); }
+  .contact-icon-mail { background: rgba(61,111,255,.1); color: var(--accent); }
+  .contact-label { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 2px; }
+  .contact-value { font-size: 12px; color: var(--muted); }
+
+  /* Form Fields */
+  .form-fields { display: flex; flex-direction: column; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 8px; }
+  .field-label { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .field-wrap { position: relative; }
+  .field-input { width: 100%; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; color: var(--primary); font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--muted); }
+  .field-textarea { width: 100%; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; color: var(--primary); font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; resize: vertical; }
+  .field-textarea:focus { border-color: var(--accent); }
+  .field-textarea::placeholder { color: var(--muted); }
+
+  /* Action Button */
+  .save-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius); font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; box-shadow: 0 8px 28px rgba(10,22,40,.25); }
+  .save-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 36px rgba(10,22,40,.35); }
+  .save-btn:active { transform: scale(.98); }
+  .save-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+  /* Info Card */
+  .info-card { display: flex; gap: 14px; padding: 18px; background: rgba(61,111,255,.08); border: 1.5px solid rgba(61,111,255,.2); border-radius: var(--radius); }
+  .info-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(61,111,255,.15); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0; }
+  .info-body { flex: 1; }
+  .info-title { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+  .info-text { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .info-text-small { font-size: 11px; color: var(--muted); margin-top: 8px; font-style: italic; }
+`;

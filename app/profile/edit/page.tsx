@@ -3,12 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import { useAuthStore } from '@/store/authStore';
 import { profileAPIExtended } from '@/lib/api/extended';
-import { User, Mail, Phone, Camera, Save } from 'lucide-react';
+import { User, Mail, Phone, Camera, Save, ArrowRight, ChevronLeft } from 'lucide-react';
 
 export default function ProfileEditPage() {
   const router = useRouter();
@@ -37,7 +34,6 @@ export default function ProfileEditPage() {
         ...formData,
       });
 
-      // Update local state
       updateUser({
         ...user,
         first_name: formData.first_name,
@@ -62,76 +58,97 @@ export default function ProfileEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-screenback">
+    <div className="page-root pb-24">
+      <style>{css}</style>
       <Header title="Edit Profile" />
 
-      <main className="max-w-screen-xl mx-auto px-4 py-4">
+      <main className="w-full">
         {/* Profile Picture */}
-        <Card className="mb-4 text-center py-8">
-          <div className="relative inline-block">
-            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-              <User className="w-12 h-12 text-primary" />
+        <section className="px-4 mt-4">
+          <div className="profile-pic-card">
+            <div className="profile-pic-wrap">
+              <div className="profile-pic">
+                <User className="w-12 h-12" />
+              </div>
+              <button className="camera-btn">
+                <Camera className="w-4 h-4" />
+              </button>
             </div>
-            <button className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/80">
-              <Camera className="w-5 h-5" />
-            </button>
+            <h3 className="profile-pic-name">{user.first_name} {user.last_name}</h3>
+            <p className="profile-pic-email">{user.email}</p>
           </div>
-          <h3 className="font-bold text-primary text-lg">{user.first_name} {user.last_name}</h3>
-          <p className="text-sm text-greyunselect">{user.email}</p>
-        </Card>
+        </section>
 
-        {/* Edit Form */}
-        <Card className="mb-4">
-          <h3 className="font-bold text-primary mb-4">Personal Information</h3>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="First Name *"
-                placeholder="First name"
-                value={formData.first_name}
-                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                icon={<User className="w-5 h-5" />}
-              />
-              <Input
-                label="Last Name *"
-                placeholder="Last name"
-                value={formData.last_name}
-                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                icon={<User className="w-5 h-5" />}
-              />
+        {/* Personal Information */}
+        <section className="px-4 mt-4">
+          <div className="section-card">
+            <h3 className="section-label-title">Personal Information</h3>
+
+            <div className="form-grid">
+              <div className="form-field">
+                <label className="field-label">First Name *</label>
+                <div className="field-wrap">
+                  <User className="field-icon" />
+                  <input
+                    type="text"
+                    placeholder="First name"
+                    value={formData.first_name}
+                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                    className="field-input"
+                  />
+                </div>
+              </div>
+              <div className="form-field">
+                <label className="field-label">Last Name *</label>
+                <div className="field-wrap">
+                  <User className="field-icon" />
+                  <input
+                    type="text"
+                    placeholder="Last name"
+                    value={formData.last_name}
+                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                    className="field-input"
+                  />
+                </div>
+              </div>
             </div>
 
-            <Input
-              label="Email *"
-              type="email"
-              placeholder="Email address"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              icon={<Mail className="w-5 h-5" />}
-            />
+            <div className="form-field">
+              <label className="field-label">Email *</label>
+              <div className="field-wrap">
+                <Mail className="field-icon" />
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="field-input"
+                />
+              </div>
+            </div>
 
-            <Input
-              label="Mobile *"
-              type="tel"
-              placeholder="Mobile number"
-              value={formData.mobile}
-              onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-              icon={<Phone className="w-5 h-5" />}
-            />
+            <div className="form-field">
+              <label className="field-label">Mobile *</label>
+              <div className="field-wrap">
+                <Phone className="field-icon" />
+                <input
+                  type="tel"
+                  placeholder="Mobile number"
+                  value={formData.mobile}
+                  onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                  className="field-input"
+                />
+              </div>
+            </div>
 
-            <div>
-              <label className="text-sm font-medium text-primary mb-2 block">Gender</label>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="form-field">
+              <label className="field-label">Gender</label>
+              <div className="gender-grid">
                 {['male', 'female'].map((gender) => (
                   <button
                     key={gender}
                     onClick={() => setFormData({ ...formData, gender })}
-                    className={`p-3 rounded-lg border-2 transition-colors capitalize ${
-                      formData.gender === gender
-                        ? 'border-primary bg-primary/10'
-                        : 'border-gray-200 hover:border-primary'
-                    }`}
+                    className={`gender-btn ${formData.gender === gender ? 'gender-active' : ''}`}
                   >
                     {gender}
                   </button>
@@ -139,51 +156,101 @@ export default function ProfileEditPage() {
               </div>
             </div>
           </div>
-        </Card>
+        </section>
 
         {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button
-            onClick={handleSubmit}
-            loading={loading}
-            className="w-full flex items-center justify-center space-x-2"
-          >
-            <Save className="w-5 h-5" />
-            <span>Save Changes</span>
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/profile')}
-            className="w-full"
-          >
-            Cancel
-          </Button>
-        </div>
+        <section className="px-4 mt-4">
+          <button onClick={handleSubmit} disabled={loading} className="save-btn">
+            {loading ? (
+              <><div className="loader-sm" />Saving...</>
+            ) : (
+              <><Save className="w-5 h-5" />Save Changes</>
+            )}
+          </button>
+          <button onClick={() => router.push('/profile')} className="cancel-btn">
+            <ChevronLeft className="w-5 h-5" />Cancel
+          </button>
+        </section>
 
-        {/* Additional Options */}
-        <Card className="mt-4">
-          <h3 className="font-bold text-primary mb-3">Account Settings</h3>
-          <div className="space-y-2">
-            <button
-              onClick={() => router.push('/profile/change-password')}
-              className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <span className="font-medium">Change Password</span>
-              <ArrowRight className="w-5 h-5 text-greyunselect" />
-            </button>
-            <button
-              onClick={() => router.push('/addresses')}
-              className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <span className="font-medium">Manage Addresses</span>
-              <ArrowRight className="w-5 h-5 text-greyunselect" />
-            </button>
+        {/* Account Settings */}
+        <section className="px-4 mt-4">
+          <div className="section-card">
+            <h3 className="section-label-title">Account Settings</h3>
+            <div className="settings-list">
+              <button
+                onClick={() => router.push('/profile/change-password')}
+                className="settings-item"
+              >
+                <span className="settings-label">Change Password</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => router.push('/addresses')}
+                className="settings-item"
+              >
+                <span className="settings-label">Manage Addresses</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-        </Card>
+        </section>
       </main>
     </div>
   );
 }
 
-// Missing ArrowRight import
-import { ArrowRight } from 'lucide-react';
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --bg: #F7F6F2; --surface: #FFFFFF; --primary: #0A1628;
+    --accent: #3D6FFF; --accent2: #FF5C3A; --green: #1DB87A;
+    --muted: #8B8FA8; --border: #ECEDF2; --radius: 20px; --radius-sm: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .page-root { min-height: 100vh; background: var(--bg); }
+  .loader-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Profile Picture Card */
+  .profile-pic-card { background: var(--surface); border-radius: var(--radius); padding: 24px 20px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .profile-pic-wrap { position: relative; display: inline-block; margin-bottom: 12px; }
+  .profile-pic { width: 88px; height: 88px; border-radius: 50%; background: rgba(10,22,40,.06); display: flex; align-items: center; justify-content: center; color: var(--primary); margin: 0 auto; }
+  .camera-btn { position: absolute; bottom: 2px; right: 2px; width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all .2s; }
+  .camera-btn:hover { background: var(--accent); transform: scale(1.05); }
+  .profile-pic-name { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+  .profile-pic-email { font-size: 13px; color: var(--muted); }
+
+  /* Section Card */
+  .section-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .section-label-title { display: flex; align-items: center; gap: 8px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+
+  /* Form Fields */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .field-label { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .field-wrap { position: relative; }
+  .field-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
+  .field-input { width: 100%; padding: 12px 14px 12px 44px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; color: var(--primary); font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--muted); }
+
+  /* Gender Selection */
+  .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gender-btn { padding: 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; text-transform: capitalize; }
+  .gender-btn:hover { border-color: rgba(61,111,255,.4); }
+  .gender-active { background: rgba(61,111,255,.08); border-color: var(--accent); color: var(--accent); }
+
+  /* Action Buttons */
+  .save-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius); font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; box-shadow: 0 8px 28px rgba(10,22,40,.25); }
+  .save-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 36px rgba(10,22,40,.35); }
+  .save-btn:active { transform: scale(.98); }
+  .save-btn:disabled { opacity: .6; cursor: not-allowed; }
+  .cancel-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 14px; background: var(--surface); color: var(--muted); border: 1.5px solid var(--border); border-radius: var(--radius); font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 10px; }
+  .cancel-btn:hover { background: var(--bg); }
+
+  /* Settings List */
+  .settings-list { display: flex; flex-direction: column; gap: 8px; }
+  .settings-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 14px 16px; background: var(--bg); border: none; border-radius: 12px; cursor: pointer; transition: all .2s; text-align: left; }
+  .settings-item:hover { background: rgba(10,22,40,.06); }
+  .settings-label { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--primary); }
+`;

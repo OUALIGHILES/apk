@@ -60,7 +60,7 @@ export default function HomePage() {
 
   return (
     <div className="page-root pb-24">
-      <style>{css}</style>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
       <Header title="Kafek" showSearch showCart showNotifications />
 
       <main className="w-full">

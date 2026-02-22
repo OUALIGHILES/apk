@@ -46,10 +46,29 @@ export default function CheckoutPage() {
     if (!address.address && orderType === 'delivery') { alert('Please enter a delivery address'); return; }
     try {
       setLoading(true);
-      const response = await ordersAPI.placeOrder({ user_id: user.id, provider_id: items[0]?.provider_id || '', cart_id: items[0]?.product_id, address_id: '', total_amount: total.toString(), delivery_fee: deliveryFee.toString(), payment_method: paymentMethod, order_type: orderType, lat: address.lat || '24.7136', lon: address.lon || '46.6753' });
-      if (response.status === 'success') { clearCart(); router.push('/orders'); }
+      // Pass product_id instead of cart_id since cart items are not synced with backend
+      const response = await ordersAPI.placeOrder({ 
+        user_id: user.id, 
+        provider_id: items[0]?.provider_id || '', 
+        product_id: items[0]?.product_id || '',
+        cart_id: '',
+        address_id: '', 
+        total_amount: total.toString(), 
+        delivery_fee: deliveryFee.toString(), 
+        payment_method: paymentMethod, 
+        order_type: orderType, 
+        lat: address.lat || '24.7136', 
+        lon: address.lon || '46.6753' 
+      });
+      if (response.status === 'success') { 
+        clearCart(); 
+        router.push('/orders'); 
+      }
       else alert(response.message || 'Failed to place order');
-    } catch (error: any) { alert(error.response?.data?.message || 'Failed to place order'); }
+    } catch (error: any) { 
+      console.error('Place order error:', error);
+      alert(error.response?.data?.message || 'Failed to place order'); 
+    }
     finally { setLoading(false); }
   };
 

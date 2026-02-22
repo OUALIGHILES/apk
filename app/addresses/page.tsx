@@ -4,12 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import { useAuthStore } from '@/store/authStore';
 import { addressesAPI, UserAddress } from '@/lib/api/extended';
-import { MapPin, Home, Building, Plus, Trash2, Edit2, Star, Navigation } from 'lucide-react';
+import { MapPin, Home, Building, Plus, Trash2, Edit2, Star, Navigation, Check } from 'lucide-react';
 
 export default function AddressesPage() {
   const router = useRouter();
@@ -66,7 +63,6 @@ export default function AddressesPage() {
           lon: longitude.toString(),
         }));
 
-        // Try to get address from coordinates
         try {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
@@ -206,172 +202,165 @@ export default function AddressesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-screenback pb-20">
+    <div className="page-root pb-24">
+      <style>{css}</style>
       <Header title="My Addresses" />
 
-      <main className="max-w-screen-xl mx-auto px-4 py-4">
-        {/* Add Address Button */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-primary">Saved Addresses</h2>
-          <Button
-            onClick={() => {
-              setShowAddForm(true);
-              setEditingAddress(null);
-              resetForm();
-            }}
-            size="sm"
-            className="flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add New</span>
-          </Button>
-        </div>
+      <main className="w-full">
+        {/* Header Actions */}
+        <section className="px-4 mt-4">
+          <div className="page-header">
+            <div>
+              <h2 className="section-title">Saved Addresses</h2>
+              <p className="section-sub">{addresses.length} address{addresses.length !== 1 ? 'es' : ''}</p>
+            </div>
+            <button onClick={() => { setShowAddForm(true); setEditingAddress(null); resetForm(); }} className="add-new-btn">
+              <Plus className="w-4 h-4" />
+              <span>Add New</span>
+            </button>
+          </div>
+        </section>
 
         {/* Add/Edit Address Form */}
         {showAddForm && (
-          <Card className="mb-4">
-            <h3 className="font-bold text-primary mb-3">
-              {editingAddress ? 'Edit Address' : 'Add New Address'}
-            </h3>
+          <section className="px-4 mt-4">
+            <div className="section-card">
+              <h3 className="section-label-title">
+                {editingAddress ? 'Edit Address' : 'Add New Address'}
+              </h3>
 
-            <div className="space-y-3">
-              <button
-                onClick={getCurrentLocation}
-                disabled={gettingLocation}
-                className="w-full flex items-center justify-center space-x-2 p-3 border-2 border-dashed border-primary/30 rounded-lg text-button hover:bg-primary/5 transition-colors disabled:opacity-50"
-              >
-                {gettingLocation ? (
-                  <>
-                    <span className="animate-spin">⌛</span>
-                    <span>Getting location...</span>
-                  </>
-                ) : (
-                  <>
-                    <Navigation className="w-5 h-5" />
-                    <span>📍 Use Current Location</span>
-                  </>
-                )}
-              </button>
+              <div className="form-fields">
+                <button
+                  onClick={getCurrentLocation}
+                  disabled={gettingLocation}
+                  className="locate-btn"
+                >
+                  {gettingLocation ? (
+                    <><div className="loader-sm" />Getting location...</>
+                  ) : (
+                    <><Navigation className="w-5 h-5" />📍 Use Current Location</>
+                  )}
+                </button>
 
-              <Input
-                label="Address *"
-                placeholder="Enter full address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                icon={<MapPin className="w-5 h-5" />}
-              />
+                <div className="form-field">
+                  <label className="field-label">Address *</label>
+                  <div className="field-wrap">
+                    <MapPin className="field-icon" />
+                    <input
+                      type="text"
+                      placeholder="Enter full address"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      className="field-input"
+                    />
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <Input
-                  label="Building No"
-                  placeholder="Bldg"
-                  value={formData.building_no}
-                  onChange={(e) => setFormData({ ...formData, building_no: e.target.value })}
-                />
-                <Input
-                  label="Floor"
-                  placeholder="Floor"
-                  value={formData.floor_no}
-                  onChange={(e) => setFormData({ ...formData, floor_no: e.target.value })}
-                />
-                <Input
-                  label="Apt No"
-                  placeholder="Apt"
-                  value={formData.appartment_no}
-                  onChange={(e) => setFormData({ ...formData, appartment_no: e.target.value })}
-                />
-              </div>
+                <div className="form-row-3">
+                  <div className="form-field">
+                    <label className="field-label">Building</label>
+                    <input
+                      type="text"
+                      placeholder="Bldg"
+                      value={formData.building_no}
+                      onChange={(e) => setFormData({ ...formData, building_no: e.target.value })}
+                      className="field-input"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label className="field-label">Floor</label>
+                    <input
+                      type="text"
+                      placeholder="Floor"
+                      value={formData.floor_no}
+                      onChange={(e) => setFormData({ ...formData, floor_no: e.target.value })}
+                      className="field-input"
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label className="field-label">Apt</label>
+                    <input
+                      type="text"
+                      placeholder="Apt"
+                      value={formData.appartment_no}
+                      onChange={(e) => setFormData({ ...formData, appartment_no: e.target.value })}
+                      className="field-input"
+                    />
+                  </div>
+                </div>
 
-              <div>
-                <label className="text-sm font-medium text-primary mb-2 block">Address Type</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {(['home', 'work', 'other'] as const).map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setFormData({ ...formData, address_type: type })}
-                      className={`p-3 rounded-lg border-2 transition-colors capitalize ${
-                        formData.address_type === type
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-200 hover:border-primary'
-                      }`}
-                    >
-                      {type === 'home' && <Home className="w-5 h-5 mx-auto mb-1" />}
-                      {type === 'work' && <Building className="w-5 h-5 mx-auto mb-1" />}
-                      {type === 'other' && <MapPin className="w-5 h-5 mx-auto mb-1" />}
-                      <span className="text-sm font-medium">{type}</span>
-                    </button>
-                  ))}
+                <div className="form-field">
+                  <label className="field-label">Address Type</label>
+                  <div className="type-grid">
+                    {(['home', 'work', 'other'] as const).map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => setFormData({ ...formData, address_type: type })}
+                        className={`type-btn ${formData.address_type === type ? 'type-active' : ''}`}
+                      >
+                        {type === 'home' && <Home className="w-5 h-5" />}
+                        {type === 'work' && <Building className="w-5 h-5" />}
+                        {type === 'other' && <MapPin className="w-5 h-5" />}
+                        <span>{type}</span>
+                        {formData.address_type === type && <span className="type-check"><Check className="w-3 h-3" /></span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-actions">
+                  <button onClick={editingAddress ? handleUpdateAddress : handleAddAddress} className="save-btn-sm">
+                    {editingAddress ? 'Update' : 'Save'} Address
+                  </button>
+                  <button onClick={() => { setShowAddForm(false); setEditingAddress(null); resetForm(); }} className="cancel-btn-sm">
+                    Cancel
+                  </button>
                 </div>
               </div>
-
-              <div className="flex space-x-3 pt-3">
-                <Button
-                  onClick={editingAddress ? handleUpdateAddress : handleAddAddress}
-                  className="flex-1"
-                  loading={gettingLocation}
-                >
-                  {editingAddress ? 'Update' : 'Save'} Address
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowAddForm(false);
-                    setEditingAddress(null);
-                    resetForm();
-                  }}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
             </div>
-          </Card>
+          </section>
         )}
 
         {/* Addresses List */}
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-            <p className="text-greyunselect mt-2">Loading addresses...</p>
-          </div>
-        ) : addresses.length === 0 ? (
-          <Card className="text-center py-12">
-            <MapPin className="w-16 h-16 mx-auto text-greyunselect/30 mb-4" />
-            <h3 className="text-xl font-bold text-primary mb-2">No Addresses Yet</h3>
-            <p className="text-greyunselect mb-6">Add your first delivery address</p>
-            <Button
-              onClick={() => {
-                setShowAddForm(true);
-                setEditingAddress(null);
-                resetForm();
-              }}
-            >
-              Add Address
-            </Button>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {addresses.map((address) => (
-              <Card key={address.id} className="relative">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      {address.address_type === 'home' && <Home className="w-4 h-4 text-primary" />}
-                      {address.address_type === 'work' && <Building className="w-4 h-4 text-primary" />}
-                      {address.address_type === 'other' && <MapPin className="w-4 h-4 text-primary" />}
-                      <span className="text-sm font-medium text-primary capitalize">
-                        {address.address_type}
-                      </span>
+        <section className="px-4 mt-4 mb-6">
+          {loading ? (
+            <div className="loading-state">
+              <div className="loader" />
+              <p className="loading-text">Loading addresses...</p>
+            </div>
+          ) : addresses.length === 0 ? (
+            <div className="empty-full">
+              <div className="empty-icon-wrap">
+                <MapPin className="w-10 h-10 empty-icon" />
+              </div>
+              <p className="empty-title">No Addresses Yet</p>
+              <p className="empty-sub">Add your first delivery address</p>
+              <button onClick={() => { setShowAddForm(true); setEditingAddress(null); resetForm(); }} className="pill-btn mt-6">
+                Add Address
+              </button>
+            </div>
+          ) : (
+            <div className="addresses-list">
+              {addresses.map((address) => (
+                <div key={address.id} className="address-card">
+                  <div className="address-body">
+                    <div className="address-header">
+                      <div className="address-type-wrap">
+                        {address.address_type === 'home' && <Home className="w-4 h-4" />}
+                        {address.address_type === 'work' && <Building className="w-4 h-4" />}
+                        {address.address_type === 'other' && <MapPin className="w-4 h-4" />}
+                        <span className="address-type">{address.address_type}</span>
+                      </div>
                       {address.is_default === '1' && (
-                        <span className="flex items-center text-xs text-yellow-600">
-                          <Star className="w-3 h-3 mr-1 fill-current" />
-                          Default
-                        </span>
+                        <div className="default-badge">
+                          <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                          <span>Default</span>
+                        </div>
                       )}
                     </div>
-                    <p className="text-sm text-greyunselect mb-2">{address.address}</p>
+                    <p className="address-text">{address.address}</p>
                     {(address.building_no || address.floor_no || address.appartment_no) && (
-                      <p className="text-xs text-greyunselect">
+                      <p className="address-details">
                         {[
                           address.building_no && `Bldg: ${address.building_no}`,
                           address.floor_no && `Floor: ${address.floor_no}`,
@@ -382,39 +371,110 @@ export default function AddressesPage() {
                       </p>
                     )}
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="address-actions">
                     {address.is_default !== '1' && (
-                      <button
-                        onClick={() => handleSetAsDefault(address.id)}
-                        className="p-2 text-greyunselect hover:text-yellow-600"
-                        title="Set as default"
-                      >
+                      <button onClick={() => handleSetAsDefault(address.id)} className="action-btn" title="Set as default">
                         <Star className="w-4 h-4" />
                       </button>
                     )}
-                    <button
-                      onClick={() => openEditForm(address)}
-                      className="p-2 text-greyunselect hover:text-button"
-                      title="Edit"
-                    >
+                    <button onClick={() => openEditForm(address)} className="action-btn" title="Edit">
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => handleDeleteAddress(address.id)}
-                      className="p-2 text-greyunselect hover:text-red-600"
-                      title="Delete"
-                    >
+                    <button onClick={() => handleDeleteAddress(address.id)} className="action-btn delete" title="Delete">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </section>
       </main>
 
       <BottomNavigation activeTab="profile" />
     </div>
   );
 }
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --bg: #F7F6F2; --surface: #FFFFFF; --primary: #0A1628;
+    --accent: #3D6FFF; --accent2: #FF5C3A; --green: #1DB87A;
+    --muted: #8B8FA8; --border: #ECEDF2; --radius: 20px; --radius-sm: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .page-root { min-height: 100vh; background: var(--bg); }
+  .loader { width: 40px; height: 40px; border: 3px solid rgba(61,111,255,.15); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+  .loader-sm { width: 18px; height: 18px; border: 2px solid rgba(10,22,40,.2); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty State */
+  .empty-full{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;padding:24px}
+  .empty-icon-wrap{width:80px;height:80px;border-radius:24px;background:rgba(10,22,40,.06);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .empty-icon{color:var(--muted)}
+  .empty-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:var(--primary);margin-bottom:6px}
+  .empty-sub{font-size:13px;color:var(--muted)}
+  .pill-btn{padding:12px 28px;background:var(--primary);color:#fff;border-radius:100px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;border:none;cursor:pointer}
+
+  /* Loading State */
+  .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; }
+  .loading-text { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--muted); margin-top: 16px; }
+
+  /* Page Header */
+  .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 4px; }
+  .section-title { font-family: 'Sora',sans-serif; font-size: 18px; font-weight: 800; color: var(--primary); }
+  .section-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .add-new-btn { display: flex; align-items: center; gap: 6px; padding: 10px 16px; background: var(--primary); color: #fff; border-radius: 12px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: all .2s; }
+  .add-new-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,22,40,.15); }
+
+  /* Section Card */
+  .section-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .section-label-title { display: flex; align-items: center; gap: 8px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+
+  /* Form Fields */
+  .form-fields { display: flex; flex-direction: column; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 8px; }
+  .field-label { font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .field-wrap { position: relative; }
+  .field-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
+  .field-input { width: 100%; padding: 12px 14px 12px 44px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; color: var(--primary); font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--muted); }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* Locate Button */
+  .locate-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: rgba(61,111,255,.08); border: 1.5px dashed rgba(61,111,255,.3); border-radius: 12px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer; transition: all .2s; }
+  .locate-btn:hover:not(:disabled) { background: rgba(61,111,255,.12); }
+  .locate-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Type Grid */
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .type-btn { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg); color: var(--muted); font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; text-transform: capitalize; }
+  .type-btn:hover { border-color: rgba(61,111,255,.4); }
+  .type-active { border-color: var(--accent); background: rgba(61,111,255,.08); color: var(--accent); }
+  .type-check { position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; }
+
+  /* Form Actions */
+  .form-actions { display: flex; gap: 10px; padding-top: 8px; }
+  .save-btn-sm { flex: 1; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; }
+  .save-btn-sm:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,22,40,.15); }
+  .cancel-btn-sm { flex: 1; padding: 12px; background: var(--surface); color: var(--muted); border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
+  .cancel-btn-sm:hover { background: var(--bg); }
+
+  /* Addresses List */
+  .addresses-list { display: flex; flex-direction: column; gap: 10px; }
+  .address-card { display: flex; background: var(--surface); border-radius: var(--radius); padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.05); transition: all .2s; }
+  .address-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+  .address-body { flex: 1; min-width: 0; }
+  .address-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .address-type-wrap { display: flex; align-items: center; gap: 6px; }
+  .address-type { font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; color: var(--primary); text-transform: capitalize; }
+  .default-badge { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(245,158,11,.08); border-radius: 100px; font-size: 11px; font-weight: 600; color: #b45309; }
+  .address-text { font-size: 13px; color: var(--primary); margin-bottom: 6px; line-height: 1.4; }
+  .address-details { font-size: 11px; color: var(--muted); }
+  .address-actions { display: flex; flex-direction: column; gap: 6px; margin-left: 12px; }
+  .action-btn { width: 32px; height: 32px; border-radius: 9px; background: var(--bg); color: var(--muted); display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: all .2s; }
+  .action-btn:hover { background: rgba(10,22,40,.1); color: var(--primary); }
+  .action-btn.delete:hover { background: rgba(255,92,58,.1); color: var(--accent2); }
+`;
